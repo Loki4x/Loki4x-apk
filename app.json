@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "Loki4x Academy",
+    "slug": "loki4x-academy",
+    "scheme": "loki4x",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#050810",
+    "android": {
+      "package": "id.web.loki4xacademy.app",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "backgroundColor": "#050810",
+        "foregroundImage": "./assets/adaptive-icon.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "ios": {
+      "bundleIdentifier": "id.web.loki4xacademy.app",
+      "supportsTablet": true
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": ["expo-router", "expo-secure-store"],
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}
