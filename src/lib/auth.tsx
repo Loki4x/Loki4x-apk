@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
+import { isPushPreferred, registerForPush, unregisterPush } from "@/lib/push";
 
 export type Tier = "FREE" | "VIP" | "MEMBERSHIP";
 
@@ -58,13 +59,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(async ({ data }) => {
       if (!active) return;
       setSession(data.session);
-      if (data.session) setProfile(await loadProfile(data.session.user.id, data.session.user.email));
+      if (data.session) {
+        setProfile(await loadProfile(data.session.user.id, data.session.user.email));
+        // Aplikasi dibuka dengan sesi lama: perbarui token push tanpa memunculkan dialog izin lagi.
+        if (await isPushPreferred()) registerForPush(false);
+      }
       setLoading(false);
     });
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, next) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, next) => {
       setSession(next);
       if (!next) setProfile(null);
       else loadProfile(next.user.id, next.user.email).then(setProfile);
+      // Baru login: minta izin notifikasi & daftarkan HP ini (kecuali user pernah mematikannya).
+      if (event === "SIGNED_IN" && next) {
+        isPushPreferred().then((on) => {
+          if (on) registerForPush(true);
+        });
+      }
     });
     return () => {
       active = false;
@@ -77,6 +88,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [session]);
 
   const signOut = useCallback(async () => {
+    // Hapus token push dulu (butuh sesi login), supaya HP ini tidak menerima notifikasi akun ini lagi.
+    await unregisterPush();
     await supabase.auth.signOut();
   }, []);
 

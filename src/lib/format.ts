@@ -43,6 +43,20 @@ export function formatTimeWib(iso: string): string {
   return `${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`;
 }
 
+/** "16 Nov 2026, 19:30" (WIB) */
+export function formatDateTimeWib(iso: string): string {
+  const d = new Date(new Date(iso).getTime() + WIB_MS);
+  const hh = String(d.getUTCHours()).padStart(2, "0");
+  const mm = String(d.getUTCMinutes()).padStart(2, "0");
+  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}, ${hh}:${mm}`;
+}
+
+/** "hari ini" / "3 hari lalu" */
+export function daysAgo(iso: string): string {
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
+  return days <= 0 ? "hari ini" : `${days} hari lalu`;
+}
+
 /** "16 Nov 2026" */
 export function formatDate(iso: string): string {
   const d = new Date(iso);

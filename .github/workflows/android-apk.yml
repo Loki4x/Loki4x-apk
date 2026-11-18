@@ -8,6 +8,9 @@ name: Build Android APK
 #   EXPO_PUBLIC_SUPABASE_URL       = NEXT_PUBLIC_SUPABASE_URL dari project web (Vercel)
 #   EXPO_PUBLIC_SUPABASE_ANON_KEY  = NEXT_PUBLIC_SUPABASE_ANON_KEY dari project web (Vercel)
 #   EXPO_PUBLIC_WEB_URL            = (opsional) default https://www.loki4xacademy.web.id
+#
+# Opsional untuk push notification (tab "Secrets"):
+#   GOOGLE_SERVICES_JSON           = isi file google-services.json dari Firebase (boleh JSON mentah atau base64)
 on:
   push:
     branches: [main]
@@ -54,6 +57,21 @@ jobs:
 
       - name: Typecheck
         run: npx tsc --noEmit
+
+      - name: Firebase config (push notification)
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -z "$GOOGLE_SERVICES_JSON" ]; then
+            echo "::warning::Secret GOOGLE_SERVICES_JSON belum diisi: APK tetap dibuat, tapi push notification nonaktif."
+            exit 0
+          fi
+          if printf '%s' "$GOOGLE_SERVICES_JSON" | head -c 1 | grep -q '{'; then
+            printf '%s' "$GOOGLE_SERVICES_JSON" > google-services.json
+          else
+            printf '%s' "$GOOGLE_SERVICES_JSON" | base64 -d > google-services.json
+          fi
+          node -e "const j=require('./google-services.json');const ok=(j.client||[]).some(c=>c.client_info?.android_client_info?.package_name==='id.web.loki4xacademy.app');if(!ok){console.error('::error::google-services.json tidak berisi aplikasi Android id.web.loki4xacademy.app. Tambahkan aplikasi dengan package name itu di Firebase.');process.exit(1)}console.log('google-services.json OK, project',j.project_info.project_id)"
 
       - name: Generate native Android project
         run: npx expo prebuild --platform android --no-install

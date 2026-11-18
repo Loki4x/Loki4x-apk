@@ -77,16 +77,18 @@ export function T({
   color = "text",
   style,
   numberOfLines,
+  onPress,
 }: {
   children: ReactNode;
   variant?: TextVariant;
   color?: keyof ThemeColors;
   style?: StyleProp<TextStyle>;
   numberOfLines?: number;
+  onPress?: () => void;
 }) {
   const { colors } = useTheme();
   return (
-    <Text numberOfLines={numberOfLines} style={[TEXT_SIZES[variant], { color: colors[color] }, style]}>
+    <Text numberOfLines={numberOfLines} onPress={onPress} style={[TEXT_SIZES[variant], { color: colors[color] }, style]}>
       {children}
     </Text>
   );
