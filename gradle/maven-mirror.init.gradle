@@ -1,0 +1,30 @@
+// Gradle init script untuk build di GitHub Actions.
+//
+// Maven Central sering membalas HTTP 429 (Too Many Requests) ke runner GitHub yang dipakai
+// bersama banyak orang, dan Gradle menampilkannya sebagai "Could not find ...". Script ini
+// menaruh mirror resmi Maven Central milik Google di urutan PALING DEPAN untuk semua build
+// (termasuk included build @react-native/gradle-plugin), plugin, maupun dependency.
+//
+// Dipakai lewat: ./gradlew --init-script ../gradle/maven-mirror.init.gradle assembleRelease
+
+def MIRROR = "https://maven-central.storage-download.googleapis.com/maven2/"
+
+def addMirrorFirst = { RepositoryHandler repos ->
+    def mirror = repos.maven {
+        name = "MavenCentralGoogleMirror"
+        url = MIRROR
+    }
+    // Pindahkan ke posisi pertama supaya dicoba sebelum mavenCentral().
+    repos.remove(mirror)
+    repos.add(0, mirror)
+}
+
+beforeSettings { settings ->
+    addMirrorFirst(settings.pluginManagement.repositories)
+    addMirrorFirst(settings.buildscript.repositories)
+}
+
+allprojects { project ->
+    addMirrorFirst(project.buildscript.repositories)
+    addMirrorFirst(project.repositories)
+}

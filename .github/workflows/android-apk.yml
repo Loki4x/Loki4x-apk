@@ -30,7 +30,7 @@ jobs:
       EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
       EXPO_PUBLIC_WEB_URL: ${{ vars.EXPO_PUBLIC_WEB_URL || 'https://www.loki4xacademy.web.id' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Cek konfigurasi
         run: |
@@ -39,12 +39,12 @@ jobs:
             exit 1
           fi
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 17
@@ -58,9 +58,13 @@ jobs:
       - name: Generate native Android project
         run: npx expo prebuild --platform android --no-install
 
+      # Cache unduhan Gradle antar build (lebih cepat & lebih sedikit request ke Maven Central).
+      - uses: gradle/actions/setup-gradle@v4
+
       - name: Build APK (release)
         working-directory: android
-        run: ./gradlew assembleRelease --no-daemon
+        # Init script: pakai mirror Google untuk Maven Central (hindari HTTP 429 / "Could not find").
+        run: ./gradlew --init-script ../gradle/maven-mirror.init.gradle assembleRelease --no-daemon
 
       - name: Rename APK
         run: |
