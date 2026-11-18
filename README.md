@@ -11,7 +11,7 @@ aplikasi terhubung langsung ke Supabase yang sama, dan memakai API khusus mobile
 |---|---|---|
 | 1 | Login, Dashboard (ringkasan trading, kill zone ICT, news high impact), Akun, tema gelap/terang | ✅ |
 | 2 | Sinyal (daftar, statistik, detail + timeline) + push notification native | ✅ |
-| 3 | Trading Journal (tambah/edit trade, aturan risiko & target, statistik, import MT4/MT5) | ⏳ |
+| 3 | Trading Journal (tambah/edit/hapus trade, aturan risiko & target, statistik, import MT4/MT5/CSV) | ✅ |
 | 4 | Akademi (video, progres, kuis) | ⏳ |
 
 ## Unduh APK
@@ -63,7 +63,7 @@ Struktur:
 - `src/app/` — layar (Expo Router). `(tabs)/` = Dashboard, Sinyal, Journal, Akademi, Akun.
 - `src/components/` — komponen UI.
 - `src/lib/` — Supabase (sesi disimpan terenkripsi di SecureStore), auth, tema, API, format.
-- `src/shared/` — logika yang sama dengan web (jam kill zone, pips & statistik sinyal).
+- `src/shared/` — logika yang sama dengan web (jam kill zone, pips & statistik sinyal, disiplin & target, parser statement MT4/MT5).
 
 Folder `android/` dibuat otomatis oleh `expo prebuild` saat build; jangan di-commit.
 

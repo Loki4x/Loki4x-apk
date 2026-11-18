@@ -9,7 +9,7 @@ export async function apiGet<T>(path: string): Promise<T> {
   return apiRequest<T>("GET", path);
 }
 
-export async function apiRequest<T>(method: "GET" | "POST" | "DELETE", path: string, payload?: unknown): Promise<T> {
+export async function apiRequest<T>(method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE", path: string, payload?: unknown): Promise<T> {
   const { data } = await supabase.auth.getSession();
   const token = data.session?.access_token;
   const res = await fetch(`${WEB_URL}${path}`, {
