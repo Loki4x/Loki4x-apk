@@ -1,0 +1,85 @@
+name: Build Android APK
+
+# Build APK otomatis:
+# - Setiap pull request: dicek & di-build, APK tersedia di tab "Artifacts" run tersebut.
+# - Setiap push ke main: APK juga diterbitkan di halaman Releases (gampang diunduh dari HP).
+#
+# Wajib diisi sekali di GitHub: Settings → Secrets and variables → Actions → tab "Variables":
+#   EXPO_PUBLIC_SUPABASE_URL       = NEXT_PUBLIC_SUPABASE_URL dari project web (Vercel)
+#   EXPO_PUBLIC_SUPABASE_ANON_KEY  = NEXT_PUBLIC_SUPABASE_ANON_KEY dari project web (Vercel)
+#   EXPO_PUBLIC_WEB_URL            = (opsional) default https://www.loki4xacademy.web.id
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      EXPO_PUBLIC_SUPABASE_URL: ${{ vars.EXPO_PUBLIC_SUPABASE_URL }}
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
+      EXPO_PUBLIC_WEB_URL: ${{ vars.EXPO_PUBLIC_WEB_URL || 'https://www.loki4xacademy.web.id' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cek konfigurasi
+        run: |
+          if [ -z "$EXPO_PUBLIC_SUPABASE_URL" ] || [ -z "$EXPO_PUBLIC_SUPABASE_ANON_KEY" ]; then
+            echo "::error::Variable EXPO_PUBLIC_SUPABASE_URL / EXPO_PUBLIC_SUPABASE_ANON_KEY belum diisi (Settings > Secrets and variables > Actions > Variables)."
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Generate native Android project
+        run: npx expo prebuild --platform android --no-install
+
+      - name: Build APK (release)
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: Rename APK
+        run: |
+          VERSION=$(node -p "require('./app.json').expo.version")
+          echo "APK_NAME=loki4x-academy-v${VERSION}-build${{ github.run_number }}.apk" >> "$GITHUB_ENV"
+          cp android/app/build/outputs/apk/release/app-release.apk "loki4x-academy-v${VERSION}-build${{ github.run_number }}.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: loki4x-academy-apk
+          path: ${{ env.APK_NAME }}
+          retention-days: 30
+
+      - name: Publish release (main)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "build-${{ github.run_number }}" "$APK_NAME" \
+            --title "Loki4x Academy build ${{ github.run_number }}" \
+            --notes "APK otomatis dari commit ${GITHUB_SHA::7}. Unduh file .apk di bawah lalu install di HP Android." \
+            --latest
