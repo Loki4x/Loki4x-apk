@@ -59,7 +59,7 @@ jobs:
         run: npx expo prebuild --platform android --no-install
 
       # Cache unduhan Gradle antar build (lebih cepat & lebih sedikit request ke Maven Central).
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v5
 
       - name: Build APK (release)
         working-directory: android
