@@ -20,6 +20,10 @@ def addMirrorFirst = { RepositoryHandler repos ->
 }
 
 beforeSettings { settings ->
+    // Penting: kalau settings.gradle tidak mendeklarasikan repository plugin, Gradle otomatis memakai
+    // Gradle Plugin Portal. Karena kita menambahkan mirror, daftar itu tidak kosong lagi, jadi Plugin
+    // Portal harus ditambahkan sendiri (mis. plugin com.diffplug.spotless dari react-native-worklets).
+    settings.pluginManagement.repositories.gradlePluginPortal()
     addMirrorFirst(settings.pluginManagement.repositories)
     addMirrorFirst(settings.buildscript.repositories)
 }
