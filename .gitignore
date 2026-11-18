@@ -39,3 +39,6 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Firebase (diisi dari GitHub Secret saat build)
+google-services.json

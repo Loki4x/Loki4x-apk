@@ -10,7 +10,7 @@ aplikasi terhubung langsung ke Supabase yang sama, dan memakai API khusus mobile
 | Tahap | Fitur | Status |
 |---|---|---|
 | 1 | Login, Dashboard (ringkasan trading, kill zone ICT, news high impact), Akun, tema gelap/terang | ✅ |
-| 2 | Sinyal + push notification native | ⏳ |
+| 2 | Sinyal (daftar, statistik, detail + timeline) + push notification native | ✅ |
 | 3 | Trading Journal (tambah/edit trade, aturan risiko & target, statistik, import MT4/MT5) | ⏳ |
 | 4 | Akademi (video, progres, kuis) | ⏳ |
 
@@ -33,6 +33,22 @@ GitHub → **Settings → Secrets and variables → Actions → tab Variables**,
 Anon key Supabase memang bersifat publik (web juga mengirimnya ke browser); keamanan data
 dijaga oleh Row Level Security di database.
 
+### Push notification (Firebase, sekali saja)
+
+Push memakai Firebase Cloud Messaging. Tanpa langkah ini APK tetap jalan, hanya notifikasi nonaktif.
+
+1. [console.firebase.google.com](https://console.firebase.google.com) → buat project (mis. "Loki4x").
+2. Add app → **Android**, package name **`id.web.loki4xacademy.app`** → unduh **`google-services.json`**.
+3. GitHub repo ini → Settings → Secrets and variables → Actions → tab **Secrets** →
+   `GOOGLE_SERVICES_JSON` = seluruh isi file `google-services.json`.
+4. Firebase → Project settings → **Service accounts** → *Generate new private key* → simpan file JSON.
+5. Vercel (project web) → Settings → Environment Variables → `FIREBASE_SERVICE_ACCOUNT` = seluruh isi
+   file JSON service account itu, lalu redeploy web.
+6. Supabase → SQL Editor → jalankan `supabase/mobile-push.sql` dari repo web.
+
+Setelah itu semua notifikasi web (sinyal baru & update, pengingat news, batas risiko, pengumuman admin)
+juga terkirim ke aplikasi.
+
 ## Pengembangan
 
 ```bash
@@ -47,7 +63,7 @@ Struktur:
 - `src/app/` — layar (Expo Router). `(tabs)/` = Dashboard, Sinyal, Journal, Akademi, Akun.
 - `src/components/` — komponen UI.
 - `src/lib/` — Supabase (sesi disimpan terenkripsi di SecureStore), auth, tema, API, format.
-- `src/shared/` — logika yang sama dengan web (mis. jam kill zone).
+- `src/shared/` — logika yang sama dengan web (jam kill zone, pips & statistik sinyal).
 
 Folder `android/` dibuat otomatis oleh `expo prebuild` saat build; jangan di-commit.
 

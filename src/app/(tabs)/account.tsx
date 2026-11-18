@@ -2,6 +2,7 @@ import { Alert, Linking, Pressable, StyleSheet, View } from "react-native";
 import Constants from "expo-constants";
 import { Ionicons } from "@expo/vector-icons";
 import { Badge, Button, Card, Screen, T } from "@/components/ui";
+import { NotificationSettingCard } from "@/components/NotificationSettingCard";
 import { useAuth, type Tier } from "@/lib/auth";
 import { useTheme, type ThemeMode } from "@/lib/theme";
 import { WEB_URL } from "@/lib/config";
@@ -51,6 +52,8 @@ export default function AccountScreen() {
           <T variant="caption" color="textSecondary">Aktif sampai {formatDate(profile.vip_expires_at)}</T>
         )}
       </Card>
+
+      <NotificationSettingCard />
 
       <Card>
         <T variant="label" color="textMuted">Tampilan</T>
