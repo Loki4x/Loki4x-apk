@@ -9,6 +9,7 @@ import { fetchSignal, formatPrice, STATUS_META, UPDATE_LABEL } from "@/lib/signa
 import { formatDateTimeWib } from "@/lib/format";
 import { signalResultPips, isTerminalStatus } from "@/shared/signal-metrics";
 import type { Signal, SignalUpdate } from "@/shared/signal-types";
+import { useI18n } from "@/lib/i18n";
 
 function ImageBlock({ title, url }: { title: string; url: string }) {
   const { colors } = useTheme();
@@ -31,6 +32,7 @@ export default function SignalDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { session, profile } = useAuth();
   const { colors } = useTheme();
+  const { t } = useI18n();
   const [signal, setSignal] = useState<Signal | null | undefined>(undefined);
   const [updates, setUpdates] = useState<SignalUpdate[]>([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -138,7 +140,7 @@ export default function SignalDetailScreen() {
         )}
         <T variant="caption" color="textMuted">
           Diposting {formatDateTimeWib(signal.posted_at)} WIB
-          {signal.closed_at ? ` · ditutup ${formatDateTimeWib(signal.closed_at)} WIB` : ""}
+          {signal.closed_at ? ` · ${t("ditutup")} ${formatDateTimeWib(signal.closed_at)} WIB` : ""}
           {signal.signal_type === "NEWS" ? " · sinyal news" : ""}
         </T>
       </Card>

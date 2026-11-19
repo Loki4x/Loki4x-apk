@@ -9,6 +9,7 @@ import { useTheme } from "@/lib/theme";
 import { fetchQuiz, submitQuiz } from "@/lib/academy";
 import { friendlyApiError } from "@/lib/journal";
 import { ACADEMY_CATEGORIES, QUIZ_PASS_PERCENT, type PublicQuizQuestion, type QuizResult } from "@/shared/academy";
+import { useI18n } from "@/lib/i18n";
 
 const LETTERS = ["A", "B", "C", "D", "E", "F"];
 
@@ -17,6 +18,7 @@ export default function QuizScreen() {
   const meta = ACADEMY_CATEGORIES[String(slug)];
   const { session, profile } = useAuth();
   const { colors } = useTheme();
+  const { t } = useI18n();
   const [questions, setQuestions] = useState<PublicQuizQuestion[] | null>(null);
   const [passPercent, setPassPercent] = useState(QUIZ_PASS_PERCENT);
   const [answers, setAnswers] = useState<Record<string, number>>({});
@@ -69,9 +71,9 @@ export default function QuizScreen() {
       }
     };
     if (answered < questions.length) {
-      Alert.alert("Kumpulkan kuis?", `Masih ada ${questions.length - answered} soal belum dijawab (dihitung salah).`, [
-        { text: "Lanjut jawab", style: "cancel" },
-        { text: "Kumpulkan", onPress: run },
+      Alert.alert(t("Kumpulkan kuis?"), t("Masih ada {n} soal belum dijawab (dihitung salah).", { n: questions.length - answered }), [
+        { text: t("Lanjut jawab"), style: "cancel" },
+        { text: t("Kumpulkan"), onPress: run },
       ]);
     } else {
       run();
@@ -87,7 +89,7 @@ export default function QuizScreen() {
           <Ionicons name={result.passed ? "trophy" : "refresh-circle"} size={44} color={result.passed ? colors.success : colors.warning} />
           <T variant="h1">{result.percent}%</T>
           <T variant="body" style={{ fontWeight: "700" }}>
-            {result.score} dari {result.total} benar · {result.passed ? "Lulus 🎉" : `Belum lulus (min. ${passPercent}%)`}
+            {result.score} dari {result.total} benar · {result.passed ? t("Lulus 🎉") : t("Belum lulus (min. {p}%)", { p: passPercent })}
           </T>
           <T variant="caption" color="textMuted">{meta.title}</T>
         </Card>
@@ -139,7 +141,7 @@ export default function QuizScreen() {
 
   return (
     <Screen>
-      <BackHeader title={`Kuis ${meta.title}`} fallback={`/course/${slug}`} />
+      <BackHeader title={t("Kuis {title}", { title: t(meta.title) })} fallback={`/course/${slug}`} />
 
       {questions === null && <T variant="bodySm" color="textMuted">Memuat soal…</T>}
       {error && <T variant="bodySm" color="error">{error}</T>}

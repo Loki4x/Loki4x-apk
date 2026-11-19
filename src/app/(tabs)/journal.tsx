@@ -1,17 +1,17 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Badge, Button, Card, Screen, T } from "@/components/ui";
 import { DisciplineCard } from "@/components/DisciplineCard";
 import { hasAccess, useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
-import { WEB_URL } from "@/lib/config";
 import { formatMoney, formatPnl, todayWib } from "@/lib/format";
-import { fetchAccounts, fetchTrades, getActiveAccountId, setActiveAccountId } from "@/lib/journal";
+import { exportTradesCsv, fetchAccounts, fetchTrades, getActiveAccountId, setActiveAccountId } from "@/lib/journal";
 import { computeDiscipline } from "@/shared/discipline";
 import { EMOTION_LABEL, isEmotion } from "@/shared/journal-tags";
 import type { Trade, TradingAccount } from "@/shared/journal-types";
+import { useI18n } from "@/lib/i18n";
 
 const SESSION_LABEL: Record<string, string> = { LONDON: "London", NEW_YORK: "New York", ASIA: "Asia", OVERLAP: "Overlap" };
 
@@ -41,6 +41,7 @@ function groupBy(closed: Trade[], keyOf: (t: Trade) => string | null): GroupRow[
 export default function JournalScreen() {
   const { session, profile } = useAuth();
   const { colors } = useTheme();
+  const { t: tx } = useI18n();
   const [accounts, setAccounts] = useState<TradingAccount[] | null>(null);
   const [activeId, setActiveIdState] = useState<string | null>(null);
   // Ref supaya load() tidak dibuat ulang (dan memuat dua kali) setiap akun aktif berganti.
@@ -52,6 +53,7 @@ export default function JournalScreen() {
   const [trades, setTrades] = useState<Trade[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const allowed = hasAccess(profile?.effectiveTier, "MEMBERSHIP");
   const userId = session?.user.id;
@@ -103,11 +105,11 @@ export default function JournalScreen() {
       discipline: computeDiscipline(account, trades, today),
       bySession: groupBy(closed, (t) => (t.session ? SESSION_LABEL[t.session] ?? t.session : null)),
       byStrategy: groupBy(closed, (t) => t.strategy),
-      byEmotion: groupBy(closed, (t) => (t.emotion && isEmotion(t.emotion) ? EMOTION_LABEL[t.emotion] : null)),
-      byPlan: groupBy(closed, (t) => (t.followed_plan === true ? "Sesuai rencana" : t.followed_plan === false ? "Melanggar rencana" : null)),
+      byEmotion: groupBy(closed, (t) => (t.emotion && isEmotion(t.emotion) ? tx(EMOTION_LABEL[t.emotion]) : null)),
+      byPlan: groupBy(closed, (t) => (t.followed_plan === true ? tx("Sesuai rencana") : t.followed_plan === false ? tx("Melanggar rencana") : null)),
       recent: [...trades].reverse(),
     };
-  }, [account, trades]);
+  }, [account, trades, tx]);
 
   async function selectAccount(id: string) {
     if (!userId || id === activeId) return;
@@ -130,7 +132,7 @@ export default function JournalScreen() {
           <T variant="bodySm" color="textSecondary">
             Catat trade, pasang aturan risiko & target, lihat statistik, dan import statement MT4/MT5.
           </T>
-          <Button title="Upgrade di web" onPress={() => Linking.openURL(`${WEB_URL}/upgrade`)} />
+          <Button title="Upgrade sekarang" onPress={() => router.push("/upgrade")} />
         </Card>
       </Screen>
     );
@@ -154,13 +156,13 @@ export default function JournalScreen() {
       {accounts && accounts.length === 0 && (
         <Card>
           <T variant="bodySm" color="textSecondary">
-            Belum ada akun journaling. Buka halaman Journal di web sekali, akun pertama dibuat otomatis.
+            Belum ada akun journaling. Buat akun pertama kamu untuk mulai mencatat trade.
           </T>
-          <Button title="Buka Journal di web" variant="secondary" onPress={() => Linking.openURL(`${WEB_URL}/trades`)} />
+          <Button title="+ Buat akun journaling" onPress={() => router.push("/journal-accounts")} />
         </Card>
       )}
 
-      {accounts && accounts.length > 1 && (
+      {accounts && accounts.length > 0 && (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
           {accounts.map((a) => {
             const active = a.id === activeId;
@@ -177,6 +179,13 @@ export default function JournalScreen() {
               </Pressable>
             );
           })}
+          <Pressable
+            onPress={() => router.push("/journal-accounts")}
+            style={[styles.chip, styles.manage, { borderColor: colors.border, backgroundColor: colors.surface }]}
+          >
+            <Ionicons name="settings-outline" size={14} color={colors.textSecondary} />
+            <T variant="bodySm" style={{ fontWeight: "600" }} color="textSecondary">Kelola akun</T>
+          </Pressable>
         </ScrollView>
       )}
 
@@ -200,9 +209,27 @@ export default function JournalScreen() {
             ))}
           </Card>
 
+          <Button title="+ Tambah trade" onPress={() => router.push(`/trade/new?account=${account.id}`)} />
           <View style={{ flexDirection: "row", gap: 10 }}>
-            <Button title="+ Tambah trade" onPress={() => router.push(`/trade/new?account=${account.id}`)} style={{ flex: 1 }} />
             <Button title="Import" variant="secondary" onPress={() => router.push(`/journal-import?account=${account.id}`)} style={{ flex: 1 }} />
+            <Button
+              title="Export CSV"
+              variant="secondary"
+              loading={exporting}
+              disabled={!trades || trades.length === 0}
+              onPress={async () => {
+                if (!trades) return;
+                setExporting(true);
+                try {
+                  await exportTradesCsv(account.name, trades);
+                } catch {
+                  setError("Export gagal. Coba lagi.");
+                } finally {
+                  setExporting(false);
+                }
+              }}
+              style={{ flex: 1 }}
+            />
           </View>
 
           <DisciplineCard summary={view.discipline} currency={cur} onEdit={() => router.push(`/journal-rules?account=${account.id}`)} />
@@ -254,7 +281,7 @@ export default function JournalScreen() {
                   <T variant="caption" color="textMuted">
                     {t.trade_date}
                     {t.strategy ? ` · ${t.strategy}` : ""}
-                    {t.emotion && isEmotion(t.emotion) ? ` · ${EMOTION_LABEL[t.emotion]}` : ""}
+                    {t.emotion && isEmotion(t.emotion) ? ` · ${tx(EMOTION_LABEL[t.emotion])}` : ""}
                   </T>
                 </View>
                 <View style={{ alignItems: "flex-end" }}>
@@ -271,7 +298,7 @@ export default function JournalScreen() {
           )}
           {view.recent.length > 100 && (
             <T variant="caption" color="textMuted" style={{ textAlign: "center" }}>
-              Menampilkan 100 trade terbaru. Riwayat lengkap & export CSV ada di Journal web.
+              Menampilkan 100 trade terbaru. Semua trade ikut ter-export di Export CSV.
             </T>
           )}
         </>
@@ -282,6 +309,7 @@ export default function JournalScreen() {
 
 const styles = StyleSheet.create({
   chip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 7 },
+  manage: { flexDirection: "row", alignItems: "center", gap: 5, borderStyle: "dashed" },
   kpis: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
   kpi: { flexBasis: "29%", flexGrow: 1, gap: 2 },
   groupRow: { flexDirection: "row", alignItems: "center", gap: 6 },

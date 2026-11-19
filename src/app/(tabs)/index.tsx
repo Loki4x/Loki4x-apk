@@ -1,5 +1,6 @@
+import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { Linking, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Badge, Button, Card, Screen, T } from "@/components/ui";
 import { MarketSessionsCard } from "@/components/MarketSessionsCard";
@@ -7,7 +8,6 @@ import { hasAccess, useAuth, type Tier } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { apiGet } from "@/lib/api";
 import { useTheme } from "@/lib/theme";
-import { WEB_URL } from "@/lib/config";
 import { formatDate, formatDayWib, formatMoney, formatPnl, formatTimeWib, todayWib, type Currency } from "@/lib/format";
 
 interface Summary {
@@ -121,7 +121,7 @@ export default function DashboardScreen() {
           <T variant="bodySm" color="textSecondary">
             Upgrade ke Membership untuk Trading Journal, kalender news, sinyal, dan Akademi.
           </T>
-          <Button title="Upgrade di web" onPress={() => Linking.openURL(`${WEB_URL}/upgrade`)} />
+          <Button title="Upgrade sekarang" onPress={() => router.push("/upgrade")} />
         </Card>
       )}
 
@@ -138,7 +138,7 @@ export default function DashboardScreen() {
             <T variant="bodySm" color="textMuted">Memuat…</T>
           ) : summary === null ? (
             <T variant="bodySm" color="textMuted">
-              Belum ada akun journaling. Buat dulu di halaman Journal (web), nanti otomatis muncul di sini.
+              Belum ada akun journaling. Buat dulu di tab Journal.
             </T>
           ) : (
             <View style={styles.kpis}>

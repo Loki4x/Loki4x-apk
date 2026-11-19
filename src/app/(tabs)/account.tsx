@@ -1,5 +1,7 @@
 import { Alert, Linking, Pressable, StyleSheet, View } from "react-native";
+import { useI18n, type Locale } from "@/lib/i18n";
 import Constants from "expo-constants";
+import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Badge, Button, Card, Screen, T } from "@/components/ui";
 import { NotificationSettingCard } from "@/components/NotificationSettingCard";
@@ -15,8 +17,14 @@ const THEME_OPTIONS: { mode: ThemeMode; label: string; icon: keyof typeof Ionico
   { mode: "light", label: "Terang", icon: "sunny-outline" },
 ];
 
-const LINKS: { label: string; path: string; icon: keyof typeof Ionicons.glyphMap }[] = [
-  { label: "Upgrade / perpanjang membership", path: "/upgrade", icon: "rocket-outline" },
+const LANGS: { locale: Locale; label: string; flag: string }[] = [
+  { locale: "id", label: "Indonesia", flag: "🇮🇩" },
+  { locale: "en", label: "English", flag: "🇬🇧" },
+];
+
+/** app: buka layar di aplikasi; web: buka halaman web. */
+const LINKS: { label: string; path: string; icon: keyof typeof Ionicons.glyphMap; app?: boolean }[] = [
+  { label: "Upgrade / perpanjang membership", path: "/upgrade", icon: "rocket-outline", app: true },
   { label: "Pengaturan akun & notifikasi", path: "/settings", icon: "settings-outline" },
   { label: "Program referral", path: "/referral", icon: "gift-outline" },
 ];
@@ -24,12 +32,13 @@ const LINKS: { label: string; path: string; icon: keyof typeof Ionicons.glyphMap
 export default function AccountScreen() {
   const { profile, session, signOut } = useAuth();
   const { colors, mode, setMode } = useTheme();
+  const { t, locale, setLocale } = useI18n();
   const tier = profile?.effectiveTier ?? "FREE";
 
   function confirmSignOut() {
-    Alert.alert("Keluar", "Yakin mau keluar dari akun ini?", [
-      { text: "Batal", style: "cancel" },
-      { text: "Keluar", style: "destructive", onPress: () => signOut() },
+    Alert.alert(t("Keluar"), t("Yakin mau keluar dari akun ini?"), [
+      { text: t("Batal"), style: "cancel" },
+      { text: t("Keluar"), style: "destructive", onPress: () => signOut() },
     ]);
   }
 
@@ -52,6 +61,19 @@ export default function AccountScreen() {
           <T variant="caption" color="textSecondary">Aktif sampai {formatDate(profile.vip_expires_at)}</T>
         )}
       </Card>
+
+      {profile?.is_admin && (
+        <Pressable onPress={() => router.push("/admin")}>
+          <Card style={{ flexDirection: "row", alignItems: "center", gap: 12, borderColor: colors.primary }}>
+            <Ionicons name="shield-checkmark-outline" size={22} color={colors.primary} />
+            <View style={{ flex: 1 }}>
+              <T style={{ fontWeight: "700" }}>Menu Admin</T>
+              <T variant="caption" color="textMuted">Sinyal, Akademi, pengumuman</T>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+          </Card>
+        </Pressable>
+      )}
 
       <NotificationSettingCard />
 
@@ -77,16 +99,39 @@ export default function AccountScreen() {
         </View>
       </Card>
 
+      <Card>
+        <T variant="label" color="textMuted">Bahasa</T>
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          {LANGS.map((o) => {
+            const active = locale === o.locale;
+            return (
+              <Pressable
+                key={o.locale}
+                onPress={() => setLocale(o.locale)}
+                style={[
+                  styles.themeOption,
+                  { borderColor: active ? colors.primary : colors.border, backgroundColor: active ? colors.primarySubtle : colors.surface2 },
+                ]}
+              >
+                <T variant="body">{o.flag}</T>
+                <T variant="caption" style={{ color: active ? colors.primary : colors.textSecondary, fontWeight: "600" }}>{o.label}</T>
+              </Pressable>
+            );
+          })}
+        </View>
+        <T variant="caption" color="textMuted">Bahasa juga dipakai untuk web, email, dan notifikasi.</T>
+      </Card>
+
       <Card style={{ gap: 0, paddingVertical: 4 }}>
         {LINKS.map((l, i) => (
           <Pressable
             key={l.path}
-            onPress={() => Linking.openURL(`${WEB_URL}${l.path}`)}
+            onPress={() => (l.app ? router.push(l.path) : Linking.openURL(`${WEB_URL}${l.path}`))}
             style={[styles.link, i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border }]}
           >
             <Ionicons name={l.icon} size={18} color={colors.textSecondary} />
             <T variant="bodySm" style={{ flex: 1 }}>{l.label}</T>
-            <Ionicons name="open-outline" size={16} color={colors.textMuted} />
+            <Ionicons name={l.app ? "chevron-forward" : "open-outline"} size={16} color={colors.textMuted} />
           </Pressable>
         ))}
       </Card>

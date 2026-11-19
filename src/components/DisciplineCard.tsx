@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, View } from "react-native";
+import { useI18n } from "@/lib/i18n";
 import { Ionicons } from "@expo/vector-icons";
 import { Card, ProgressBar, T } from "@/components/ui";
 import { useTheme } from "@/lib/theme";
@@ -7,6 +8,7 @@ import type { DisciplineSummary, RuleLevel, RuleStatus } from "@/shared/discipli
 import type { AccountCurrency } from "@/shared/journal-types";
 
 const MONTHS = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+const MONTHS_EN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 function ruleText(r: RuleStatus): { label: string; value: string } {
   switch (r.key) {
@@ -29,9 +31,10 @@ export function DisciplineCard({
   onEdit: () => void;
 }) {
   const { colors } = useTheme();
+  const { locale } = useI18n();
   const levelColor: Record<RuleLevel, string> = { ok: colors.success, warn: colors.warning, breached: colors.error };
   const [y, m] = summary.month.split("-").map(Number);
-  const monthLabel = `${MONTHS[(m || 1) - 1]} ${y}`;
+  const monthLabel = `${(locale === "en" ? MONTHS_EN : MONTHS)[(m || 1) - 1]} ${y}`;
   const empty = !summary.hasRules && !summary.hasGoals;
 
   return (

@@ -4,6 +4,7 @@ import { Tabs } from "expo-router/js-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
+import { useI18n } from "@/lib/i18n";
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -18,6 +19,7 @@ const TABS: { name: string; title: string; icon: IconName }[] = [
 export default function TabsLayout() {
   const { session, loading } = useAuth();
   const { colors } = useTheme();
+  const { t } = useI18n();
 
   if (loading) {
     return (
@@ -44,7 +46,7 @@ export default function TabsLayout() {
           key={tab.name}
           name={tab.name}
           options={{
-            title: tab.title,
+            title: t(tab.title),
             tabBarIcon: ({ color, size }) => <Ionicons name={tab.icon} color={String(color)} size={size} />,
           }}
         />

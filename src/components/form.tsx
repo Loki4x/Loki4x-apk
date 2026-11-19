@@ -1,8 +1,11 @@
 import { Pressable, StyleSheet, TextInput, View, type KeyboardTypeOptions } from "react-native";
+import { Linking } from "react-native";
 import { router } from "expo-router";
+import { WEB_URL } from "@/lib/config";
 import { Ionicons } from "@expo/vector-icons";
 import { T } from "@/components/ui";
 import { useTheme } from "@/lib/theme";
+import { useI18n } from "@/lib/i18n";
 
 export function BackHeader({ title, fallback = "/" }: { title: string; fallback?: string }) {
   const { colors } = useTheme();
@@ -36,13 +39,14 @@ export function Field({
   autoCapitalize?: "none" | "characters" | "sentences";
 }) {
   const { colors } = useTheme();
+  const { t } = useI18n();
   return (
     <View style={{ gap: 6, flex: 1 }}>
       <T variant="bodySm" color="textSecondary">{label}</T>
       <TextInput
         value={value}
         onChangeText={onChangeText}
-        placeholder={placeholder}
+        placeholder={placeholder ? t(placeholder) : placeholder}
         placeholderTextColor={colors.textMuted}
         keyboardType={keyboardType}
         multiline={multiline}
@@ -95,6 +99,31 @@ export function OptionChips<V extends string>({
   );
 }
 
+/** Checkbox persetujuan S&K (link ke bagian terkait di halaman /terms web). */
+export function TermsCheckbox({
+  checked,
+  onChange,
+  anchor,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  anchor: "paket-berbayar" | "vip-ib";
+}) {
+  const { colors } = useTheme();
+  return (
+    <Pressable onPress={() => onChange(!checked)} style={styles.check} hitSlop={6}>
+      <Ionicons name={checked ? "checkbox" : "square-outline"} size={22} color={checked ? colors.primary : colors.textMuted} />
+      <T variant="bodySm" color="textSecondary" style={{ flex: 1 }}>
+        Saya sudah membaca dan menyetujui{" "}
+        <T variant="bodySm" color="primary" style={{ fontWeight: "700" }} onPress={() => Linking.openURL(`${WEB_URL}/terms#${anchor}`)}>
+          Syarat & Ketentuan
+        </T>
+        .
+      </T>
+    </Pressable>
+  );
+}
+
 /** Angka dari keyboard HP: koma desimal ("1,25") diubah jadi titik. */
 export const normalizeNumber = (v: string) => v.trim().replace(",", ".");
 
@@ -102,5 +131,6 @@ const styles = StyleSheet.create({
   header: { flexDirection: "row", alignItems: "center", gap: 8 },
   input: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 11, fontSize: 15 },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  check: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
   chip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 },
 });

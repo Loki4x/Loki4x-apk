@@ -8,12 +8,14 @@ import { hasAccess, useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { fetchAttempts, fetchQuizCounts, fetchVideos, fetchWatchedIds } from "@/lib/academy";
 import { ACADEMY_CATEGORIES, bestAttempt, QUIZ_PASS_PERCENT, type AcademyVideo, type QuizAttempt } from "@/shared/academy";
+import { useI18n } from "@/lib/i18n";
 
 export default function CourseScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const meta = ACADEMY_CATEGORIES[String(slug)];
   const { session, profile } = useAuth();
   const { colors } = useTheme();
+  const { t } = useI18n();
   const [videos, setVideos] = useState<AcademyVideo[] | null>(null);
   const [watched, setWatched] = useState<Set<string> | null>(null);
   const [attempts, setAttempts] = useState<QuizAttempt[]>([]);
@@ -80,7 +82,7 @@ export default function CourseScreen() {
           <View style={[styles.between, { marginTop: watched ? 6 : 0 }]}>
             <T variant="label" color="textMuted">Kuis</T>
             {best ? (
-              <Badge label={`Terbaik ${best.score}/${best.total}${best.passed ? " · Lulus" : ""}`} tone={best.passed ? "success" : "warning"} />
+              <Badge label={`${t("Terbaik")} ${best.score}/${best.total}${best.passed ? ` · ${t("Lulus")}` : ""}`} tone={best.passed ? "success" : "warning"} />
             ) : (
               <T variant="caption" color="textMuted">{questions > 0 ? "Belum dikerjakan" : "Belum tersedia"}</T>
             )}

@@ -1,8 +1,11 @@
 import * as SecureStore from "expo-secure-store";
 import { supabase } from "@/lib/supabase";
-import { apiRequest } from "@/lib/api";
+import * as Sharing from "expo-sharing";
+import { File, Paths } from "expo-file-system";
+import { apiRequest, apiUpload } from "@/lib/api";
+import { todayWib } from "@/lib/format";
 import type { Trade, TradingAccount } from "@/shared/journal-types";
-import type { ImportRow } from "@/shared/trade-import";
+import { tradesToCsv, type ImportRow } from "@/shared/trade-import";
 
 // Baca data jurnal langsung dari Supabase (RLS: hanya milik user sendiri).
 // Tulis lewat API web (/api/mobile/...) supaya validasi, P&L & notifikasi batas risiko sama dengan web.
@@ -82,6 +85,8 @@ const ERRORS: Record<string, string> = {
   invalid_input: "Ada isian yang belum benar. Cek symbol, harga entry, dan tanggal.",
   membership_required: "Trading Journal khusus member Membership.",
   unauthorized: "Sesi login habis. Silakan login ulang.",
+  forbidden: "Khusus admin.",
+  server_error: "Terjadi kesalahan di server. Coba lagi.",
 };
 
 export const friendlyApiError = (err: unknown) => {
@@ -106,3 +111,40 @@ export const importRows = (accountId: string, rows: ImportRow[]) =>
     account_id: accountId,
     rows,
   });
+
+// ---------- Foto before/after ----------
+
+export { pickPhoto } from "@/lib/media";
+
+export type PhotoSlot = "before" | "after";
+
+export function uploadTradePhoto(tradeId: string, slot: PhotoSlot, uri: string) {
+  const form = new FormData();
+  form.append("slot", slot);
+  // React Native: objek {uri, name, type} dikirim sebagai file.
+  form.append("photo", { uri, name: `${slot}.jpg`, type: "image/jpeg" } as unknown as Blob);
+  return apiUpload<{ ok: true; url: string }>(`/api/mobile/trades/${tradeId}/photo`, form);
+}
+
+export const deleteTradePhoto = (tradeId: string, slot: PhotoSlot) =>
+  apiRequest<{ ok: true }>("DELETE", `/api/mobile/trades/${tradeId}/photo?slot=${slot}`);
+
+// ---------- Akun journaling ----------
+
+export const createAccount = (input: { name: string; initial_balance: string; currency: "USD" | "IDR" }) =>
+  apiRequest<{ ok: true; id: string | null }>("POST", "/api/mobile/accounts", input);
+
+export const deleteAccount = (accountId: string) => apiRequest<{ ok: true }>("DELETE", `/api/mobile/accounts/${accountId}`);
+
+// ---------- Export CSV ----------
+
+/** Tulis semua trade akun ke file CSV (format sama dengan Export CSV di web) lalu buka menu bagikan/simpan. */
+export async function exportTradesCsv(accountName: string, trades: Trade[]): Promise<void> {
+  const sorted = [...trades].sort((a, b) => a.trade_date.localeCompare(b.trade_date));
+  const safe = accountName.replace(/[^A-Za-z0-9_-]+/g, "-").replace(/^-|-$/g, "") || "akun";
+  const file = new File(Paths.cache, `loki4x-journal-${safe}-${todayWib()}.csv`);
+  if (file.exists) file.delete();
+  file.create();
+  file.write(tradesToCsv(sorted as unknown as Record<string, unknown>[]));
+  await Sharing.shareAsync(file.uri, { mimeType: "text/csv", dialogTitle: "Export jurnal (CSV)", UTI: "public.comma-separated-values-text" });
+}

@@ -1,13 +1,13 @@
 import { useCallback, useState } from "react";
-import { Linking, Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Badge, Button, Card, ProgressBar, Screen, T } from "@/components/ui";
 import { hasAccess, useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
-import { WEB_URL } from "@/lib/config";
 import { fetchAttempts, fetchQuizCounts, fetchVideos, fetchWatchedIds } from "@/lib/academy";
 import { ACADEMY_CATEGORIES, ACADEMY_SLUGS, bestAttempt, type AcademyVideo, type QuizAttempt } from "@/shared/academy";
+import { useI18n } from "@/lib/i18n";
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -21,6 +21,7 @@ interface Overview {
 export default function AcademyScreen() {
   const { session, profile } = useAuth();
   const { colors } = useTheme();
+  const { t } = useI18n();
   const [data, setData] = useState<Overview | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -59,7 +60,7 @@ export default function AcademyScreen() {
           <T variant="bodySm" color="textSecondary">
             Video belajar teknikal, fundamental, dan psikologi trading, lengkap dengan progres belajar dan kuis.
           </T>
-          <Button title="Upgrade di web" onPress={() => Linking.openURL(`${WEB_URL}/upgrade`)} />
+          <Button title="Upgrade sekarang" onPress={() => router.push("/upgrade")} />
         </Card>
       </Screen>
     );
@@ -134,11 +135,11 @@ export default function AcademyScreen() {
                     {questions > 0 ? (
                       best ? (
                         <Badge
-                          label={`Kuis terbaik ${best.score}/${best.total}${best.passed ? " · Lulus" : ""}`}
+                          label={`${t("Kuis terbaik")} ${best.score}/${best.total}${best.passed ? ` · ${t("Lulus")}` : ""}`}
                           tone={best.passed ? "success" : "warning"}
                         />
                       ) : (
-                        <Badge label={`Kuis ${questions} soal · belum dikerjakan`} tone="muted" />
+                        <Badge label={t("Kuis {n} soal · belum dikerjakan", { n: questions })} tone="muted" />
                       )
                     ) : (
                       <Badge label="Kuis belum tersedia" tone="muted" />

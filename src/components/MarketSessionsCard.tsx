@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useI18n } from "@/lib/i18n";
 import { StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Badge, Card, T } from "@/components/ui";
@@ -22,6 +23,8 @@ export function MarketSessionsCard() {
     return () => clearInterval(id);
   }, []);
 
+  const { t, locale } = useI18n();
+  const dur = (min: number) => fmtDuration(min, locale === "en");
   const sessions = computeSessions(now);
   const weekend = isWeekendClosed(now);
   const wibNow = wibParts(now).minutes;
@@ -31,19 +34,19 @@ export function MarketSessionsCard() {
   let status: { text: string; bg: string; fg: string };
   if (weekend) {
     status = {
-      text: `Pasar tutup (weekend) · buka dalam ${fmtDuration(minutesUntilMarketOpen(now))}`,
+      text: t("Pasar tutup (weekend) · buka dalam {d}", { d: dur(minutesUntilMarketOpen(now)) }),
       bg: colors.errorSubtle,
       fg: colors.error,
     };
   } else if (active) {
     status = {
-      text: `Kill zone ${active.label} aktif · selesai dalam ${fmtDuration(active.countdown)}`,
+      text: t("Kill zone {name} aktif · selesai dalam {d}", { name: active.label, d: dur(active.countdown) }),
       bg: colors.successSubtle,
       fg: colors.success,
     };
   } else {
     status = {
-      text: `Di luar kill zone · ${next.label} mulai dalam ${fmtDuration(next.countdown)}`,
+      text: t("Di luar kill zone · {name} mulai dalam {d}", { name: next.label, d: dur(next.countdown) }),
       bg: colors.surface2,
       fg: colors.textSecondary,
     };
@@ -96,7 +99,7 @@ export function MarketSessionsCard() {
               <View style={[styles.marker, { left: `${(wibNow / DAY) * 100}%`, backgroundColor: colors.text }]} />
             </View>
             <T variant="caption" color="textMuted">
-              {s.open ? `Selesai dalam ${fmtDuration(s.countdown)}` : `Mulai dalam ${fmtDuration(s.countdown)}`}
+              {s.open ? t("Selesai dalam {d}", { d: dur(s.countdown) }) : t("Mulai dalam {d}", { d: dur(s.countdown) })}
             </T>
           </View>
         );

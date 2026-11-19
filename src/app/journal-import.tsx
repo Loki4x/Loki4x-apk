@@ -10,6 +10,7 @@ import { hasAccess, useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { friendlyApiError, importRows } from "@/lib/journal";
 import { decodeFileBytes, isMt5SummaryReport, parseImportFile, type ParseResult } from "@/shared/trade-import";
+import { useI18n } from "@/lib/i18n";
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
 const BATCH = 500;
@@ -18,6 +19,7 @@ export default function JournalImportScreen() {
   const { account } = useLocalSearchParams<{ account?: string }>();
   const { session, profile } = useAuth();
   const { colors } = useTheme();
+  const { t } = useI18n();
   const [fileName, setFileName] = useState<string | null>(null);
   const [parsed, setParsed] = useState<ParseResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -98,8 +100,8 @@ export default function JournalImportScreen() {
           <T variant="h3">{done.inserted} trade berhasil di-import</T>
           {(done.duplicates > 0 || done.invalid > 0) && (
             <T variant="bodySm" color="textSecondary" style={{ textAlign: "center" }}>
-              {done.duplicates > 0 ? `${done.duplicates} sudah pernah di-import (dilewati). ` : ""}
-              {done.invalid > 0 ? `${done.invalid} baris tidak valid (dilewati).` : ""}
+              {done.duplicates > 0 ? `${t("{n} sudah pernah di-import (dilewati).", { n: done.duplicates })} ` : ""}
+              {done.invalid > 0 ? t("{n} baris tidak valid (dilewati).", { n: done.invalid }) : ""}
             </T>
           )}
           <Button title="Selesai" onPress={() => router.back()} style={{ alignSelf: "stretch", marginTop: 8 }} />
@@ -120,7 +122,7 @@ export default function JournalImportScreen() {
             <T variant="caption" color="textMuted">Kirim filenya ke HP (mis. lewat Telegram/Drive), lalu pilih di sini. Trade yang sama tidak akan masuk dua kali.</T>
           </Card>
 
-          <Button title={reading ? "Membaca file…" : fileName ? `Ganti file (${fileName})` : "Pilih file statement"} variant="secondary" onPress={pick} loading={reading} />
+          <Button title={reading ? t("Membaca file…") : fileName ? t("Ganti file ({name})", { name: fileName }) : "Pilih file statement"} variant="secondary" onPress={pick} loading={reading} />
 
           {error && (
             <View style={[styles.error, { backgroundColor: colors.errorSubtle }]}>
@@ -162,7 +164,7 @@ export default function JournalImportScreen() {
               </Card>
 
               <Button
-                title={progress !== null ? `Mengimport… ${progress}%` : `Import ${parsed.rows.length} trade`}
+                title={progress !== null ? t("Mengimport… {p}%", { p: progress }) : t("Import {n} trade", { n: parsed.rows.length })}
                 onPress={runImport}
                 loading={progress !== null}
                 disabled={!account}

@@ -17,7 +17,7 @@ export const STATUS_META: Record<SignalStatus, { label: string; tone: "success" 
   TP: { label: "TP", tone: "success" },
   SL: { label: "SL", tone: "error" },
   PARTIAL: { label: "Partial", tone: "warning" },
-  CANCEL: { label: "Batal", tone: "muted" },
+  CANCEL: { label: "Dibatalkan", tone: "muted" },
   MISS: { label: "Terlewat", tone: "muted" },
 };
 
