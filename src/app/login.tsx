@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Image, KeyboardAvoidingView, Linking, Platform, Pressable, StyleSheet, TextInput, View } from "react-native";
-import { Redirect } from "expo-router";
+import { Redirect, router } from "expo-router";
+import { authErrorMessage, classifyAuthError } from "@/lib/auth-errors";
 import { Ionicons } from "@expo/vector-icons";
 import { Button, Card, Screen, T } from "@/components/ui";
 import { supabase } from "@/lib/supabase";
@@ -11,10 +12,7 @@ import { signInWithGoogle } from "@/lib/google-auth";
 
 function friendlyError(message: string): string {
   if (/redirect|not allowed|no_code/i.test(message)) return "Login Google belum diaktifkan untuk aplikasi. Hubungi admin.";
-  if (/invalid login credentials/i.test(message)) return "Email atau password salah.";
-  if (/email not confirmed/i.test(message)) return "Email belum diverifikasi. Cek inbox kamu dulu.";
-  if (/network|fetch/i.test(message)) return "Tidak bisa terhubung. Cek koneksi internet kamu.";
-  return message;
+  return authErrorMessage(classifyAuthError({ message }));
 }
 
 export default function LoginScreen() {
@@ -36,9 +34,18 @@ export default function LoginScreen() {
       return;
     }
     setLoading(true);
-    const { error: err } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    const cleanEmail = email.trim().toLowerCase();
+    const { error: err } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
     setLoading(false);
-    if (err) setError(friendlyError(err.message));
+    if (!err) return;
+    const code = classifyAuthError(err, "login");
+    // Daftar tapi belum verifikasi: lanjutkan ke layar kode (kirim kode baru supaya pasti masih berlaku).
+    if (code === "email_not_confirmed") {
+      supabase.auth.resend({ type: "signup", email: cleanEmail }).catch(() => {});
+      router.push(`/verify-email?email=${encodeURIComponent(cleanEmail)}`);
+      return;
+    }
+    setError(authErrorMessage(code));
   }
 
   async function handleGoogle() {
@@ -132,9 +139,9 @@ export default function LoginScreen() {
           </Pressable>
         </Card>
 
-        <Pressable onPress={() => Linking.openURL(`${WEB_URL}/signup`)}>
+        <Pressable onPress={() => router.push("/signup")}>
           <T variant="bodySm" color="textSecondary" style={{ textAlign: "center" }}>
-            Belum punya akun? <T variant="bodySm" color="primary">Daftar di web</T>
+            Belum punya akun? <T variant="bodySm" color="primary" style={{ fontWeight: "700" }}>Daftar sekarang</T>
           </T>
         </Pressable>
       </KeyboardAvoidingView>
