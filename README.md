@@ -15,6 +15,8 @@ aplikasi terhubung langsung ke Supabase yang sama, dan memakai API khusus mobile
 | 4 | Akademi (video, progres tonton, kuis + pembahasan) | ✅ |
 | 5 | Foto before/after trade, export CSV, kelola akun journaling | ✅ |
 | 6 | Upgrade & pembayaran (QRIS/bank, USDT, VIP via IB), bahasa Inggris, menu admin | ✅ |
+| 7 | Lot Calculator, Report & Performance, kotak notifikasi, COT, Retail Bias, Fundamental Pasar, kalender ekonomi lengkap | ✅ |
+| 8 | Komunitas (chat per tier, realtime, foto, @mention, balas), chat admin, referral, pengaturan profil & notifikasi | ✅ |
 
 ## Unduh APK
 

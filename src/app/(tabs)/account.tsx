@@ -25,8 +25,10 @@ const LANGS: { locale: Locale; label: string; flag: string }[] = [
 /** app: buka layar di aplikasi; web: buka halaman web. */
 const LINKS: { label: string; path: string; icon: keyof typeof Ionicons.glyphMap; app?: boolean }[] = [
   { label: "Upgrade / perpanjang membership", path: "/upgrade", icon: "rocket-outline", app: true },
-  { label: "Pengaturan akun & notifikasi", path: "/settings", icon: "settings-outline" },
-  { label: "Program referral", path: "/referral", icon: "gift-outline" },
+  { label: "Pengaturan akun & notifikasi", path: "/settings", icon: "settings-outline", app: true },
+  { label: "Program referral", path: "/referral", icon: "gift-outline", app: true },
+  { label: "Notifikasi", path: "/notifications", icon: "notifications-outline", app: true },
+  { label: "Chat Admin", path: "/chat", icon: "headset-outline", app: true },
 ];
 
 export default function AccountScreen() {
