@@ -670,4 +670,5 @@ export const EN: Record<string, string> = {
   "Masuk dengan Google": "Sign in with Google",
   "Menyelesaikan login Google…": "Finishing Google sign-in…",
   "Login Google belum diaktifkan untuk aplikasi. Hubungi admin.": "Google sign-in is not enabled for the app yet. Contact an admin.",
+  "Sinyal ini sudah tidak tersedia.": "This signal is no longer available.",
 };

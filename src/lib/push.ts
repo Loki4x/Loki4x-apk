@@ -82,7 +82,11 @@ export async function unregisterPush(rememberOff = false): Promise<void> {
 /** Notifikasi membawa `url` halaman web (mis. "/signals"); petakan ke layar aplikasi. */
 export function routeForUrl(url: unknown): string {
   const path = typeof url === "string" ? url : "";
-  if (path.startsWith("/signals")) return "/signals";
+  if (path.startsWith("/signals")) {
+    // Notifikasi sinyal membawa id → langsung buka detail sinyalnya.
+    const id = /[?&]id=([0-9a-f-]{36})/i.exec(path)?.[1];
+    return id ? `/signal/${id}` : "/signals";
+  }
   if (path.startsWith("/trades") || path.startsWith("/reports")) return "/journal";
   if (path.startsWith("/academy")) return "/academy";
   if (path.startsWith("/community")) {
