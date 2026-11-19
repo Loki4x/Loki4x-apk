@@ -4,6 +4,7 @@ import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import { isPushPreferred, registerForPush, unregisterPush } from "@/lib/push";
 import { isLocale, setLocale } from "@/lib/i18n";
+import { signOutGoogle } from "@/lib/google-auth";
 
 export type Tier = "FREE" | "VIP" | "MEMBERSHIP";
 
@@ -105,6 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = useCallback(async () => {
     // Hapus token push dulu (butuh sesi login), supaya HP ini tidak menerima notifikasi akun ini lagi.
     await unregisterPush();
+    await signOutGoogle();
     await supabase.auth.signOut();
   }, []);
 

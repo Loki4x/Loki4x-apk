@@ -1,6 +1,9 @@
 import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
+import { Platform } from "react-native";
+import { GoogleSignin, isErrorWithCode, statusCodes } from "@react-native-google-signin/google-signin";
 import { supabase } from "@/lib/supabase";
+import { GOOGLE_WEB_CLIENT_ID } from "@/lib/config";
 
 // Login Google memakai provider Google yang sama dengan web (Supabase Auth).
 // Alur: buka halaman login Google di browser aman (Custom Tab) → Supabase mengalihkan ke
@@ -34,8 +37,59 @@ export function completeGoogleLogin(url: string): Promise<void> {
   return exchanging;
 }
 
-/** Hasil: "ok" (sudah login), "cancel" (user menutup browser). Melempar Error kalau gagal. */
+// ---------- Pemilih akun bawaan Android (popup "Pilih akun") ----------
+
+let configured = false;
+const nativeAvailable = () => Platform.OS === "android" && GOOGLE_WEB_CLIENT_ID.length > 0;
+
+/**
+ * Login lewat popup akun Google bawaan HP, lalu ID token Google ditukar jadi sesi Supabase.
+ * "fallback" = tidak bisa dipakai di HP/build ini (mis. Google Cloud belum dikonfigurasi) → pakai browser.
+ */
+async function nativeGoogle(): Promise<"ok" | "cancel" | "fallback"> {
+  if (!nativeAvailable()) return "fallback";
+  try {
+    if (!configured) {
+      GoogleSignin.configure({ webClientId: GOOGLE_WEB_CLIENT_ID, scopes: ["email", "profile"] });
+      configured = true;
+    }
+    await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+    const res = await GoogleSignin.signIn();
+    if (res.type !== "success") return "cancel";
+    const idToken = res.data.idToken;
+    if (!idToken) return "fallback";
+    const { error } = await supabase.auth.signInWithIdToken({ provider: "google", token: idToken });
+    if (error) {
+      console.warn("[google] signInWithIdToken:", error.message);
+      return "fallback";
+    }
+    return "ok";
+  } catch (err) {
+    if (isErrorWithCode(err)) {
+      if (err.code === statusCodes.SIGN_IN_CANCELLED) return "cancel";
+      if (err.code === statusCodes.IN_PROGRESS) return "cancel";
+    }
+    // DEVELOPER_ERROR (SHA-1 / client ID belum didaftarkan), Play Services tidak ada, dll.
+    console.warn("[google] native sign-in gagal, pakai browser:", err);
+    return "fallback";
+  }
+}
+
+/** Keluar juga dari akun Google di HP, supaya popup pilih akun muncul lagi saat login berikutnya. */
+export async function signOutGoogle() {
+  if (!nativeAvailable() || !configured) return;
+  await GoogleSignin.signOut().catch(() => {});
+}
+
+/** Hasil: "ok" (sudah login), "cancel" (user menutup popup/browser). Melempar Error kalau gagal. */
 export async function signInWithGoogle(): Promise<"ok" | "cancel"> {
+  const native = await nativeGoogle();
+  if (native !== "fallback") return native;
+  return browserGoogle();
+}
+
+/** Alur browser (Custom Tab): dipakai kalau pemilih akun bawaan belum bisa dipakai. */
+async function browserGoogle(): Promise<"ok" | "cancel"> {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: { redirectTo: GOOGLE_REDIRECT, skipBrowserRedirect: true, queryParams: { prompt: "select_account" } },
