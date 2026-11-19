@@ -1,12 +1,24 @@
 import { useEffect, useState } from "react";
-import { Alert, Pressable, StyleSheet, View } from "react-native";
+import { Alert, Image, Pressable, StyleSheet, View } from "react-native";
 import { Redirect, router, useLocalSearchParams } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { Button, Card, Screen, T } from "@/components/ui";
 import { BackHeader, Field, normalizeNumber, OptionChips } from "@/components/form";
 import { hasAccess, useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { todayWib } from "@/lib/format";
-import { createTrade, deleteTrade, fetchTrade, friendlyApiError, updateTrade, type TradeInput } from "@/lib/journal";
+import {
+  createTrade,
+  deleteTrade,
+  deleteTradePhoto,
+  fetchTrade,
+  friendlyApiError,
+  pickPhoto,
+  updateTrade,
+  uploadTradePhoto,
+  type PhotoSlot,
+  type TradeInput,
+} from "@/lib/journal";
 import { EMOTION_LABEL, EMOTIONS, STRATEGY_PRESETS } from "@/shared/journal-tags";
 
 const EMPTY: TradeInput = {
@@ -25,6 +37,20 @@ const EMPTY: TradeInput = {
   notes: "",
 };
 
+interface PhotoState {
+  /** URL foto yang sudah tersimpan di server. */
+  existing: string | null;
+  /** Foto baru dari galeri (belum diupload). */
+  local: string | null;
+  /** Foto lama diminta dihapus. */
+  removed: boolean;
+}
+const NO_PHOTO: PhotoState = { existing: null, local: null, removed: false };
+const SLOTS: { slot: PhotoSlot; label: string }[] = [
+  { slot: "before", label: "Foto before (sebelum entry)" },
+  { slot: "after", label: "Foto after (hasil)" },
+];
+
 const str = (n: number | null | undefined) => (n === null || n === undefined ? "" : String(n));
 
 /** /trade/new?account=<id> untuk trade baru, /trade/<id> untuk mengedit. */
@@ -37,6 +63,7 @@ export default function TradeFormScreen() {
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [photos, setPhotos] = useState<Record<PhotoSlot, PhotoState>>({ before: NO_PHOTO, after: NO_PHOTO });
 
   useEffect(() => {
     if (isNew || !session) return;
@@ -57,6 +84,10 @@ export default function TradeFormScreen() {
           followed_plan: t.followed_plan === true ? "yes" : t.followed_plan === false ? "no" : "",
           confluence: t.confluence ?? "",
           notes: t.notes ?? "",
+        });
+        setPhotos({
+          before: { ...NO_PHOTO, existing: t.before_photo_url },
+          after: { ...NO_PHOTO, existing: t.after_photo_url },
         });
       } else {
         setError("Trade tidak ditemukan.");
@@ -90,19 +121,54 @@ export default function TradeFormScreen() {
       return;
     }
     setSaving(true);
+    let tradeId: string | null = isNew ? null : String(id);
     try {
       if (isNew) {
         if (!account) throw new Error("Akun journaling tidak diketahui.");
-        await createTrade(String(account), payload);
+        tradeId = (await createTrade(String(account), payload)).id;
       } else {
         await updateTrade(String(id), payload);
       }
-      router.back();
     } catch (err) {
       setError(friendlyApiError(err));
-    } finally {
       setSaving(false);
+      return;
     }
+
+    // Trade sudah tersimpan; lanjut foto. Gagal upload tidak membatalkan trade-nya.
+    let photoError: string | null = null;
+    if (tradeId) {
+      for (const { slot } of SLOTS) {
+        const p = photos[slot];
+        try {
+          if (p.local) await uploadTradePhoto(tradeId, slot, p.local);
+          else if (p.removed && p.existing) await deleteTradePhoto(tradeId, slot);
+        } catch (err) {
+          photoError = friendlyApiError(err);
+        }
+      }
+    }
+    setSaving(false);
+    if (photoError) {
+      Alert.alert("Trade tersimpan", `Tapi foto gagal diupload: ${photoError}. Coba tambahkan lagi lewat Edit trade.`, [
+        { text: "OK", onPress: () => router.back() },
+      ]);
+      return;
+    }
+    router.back();
+  }
+
+  async function choosePhoto(slot: PhotoSlot) {
+    try {
+      const uri = await pickPhoto();
+      if (uri) setPhotos((p) => ({ ...p, [slot]: { ...p[slot], local: uri, removed: false } }));
+    } catch {
+      setError("Foto tidak bisa dibuka. Coba pilih foto lain.");
+    }
+  }
+
+  function removePhoto(slot: PhotoSlot) {
+    setPhotos((p) => ({ ...p, [slot]: { ...p[slot], local: null, removed: true } }));
   }
 
   function confirmDelete() {
@@ -202,7 +268,41 @@ export default function TradeFormScreen() {
           <Card style={{ gap: 14 }}>
             <Field label="Confluence (alasan entry)" value={form.confluence} onChangeText={set("confluence")} multiline autoCapitalize="sentences" placeholder="SNR, trend, news, konfirmasi indikator…" />
             <Field label="Catatan" value={form.notes} onChangeText={set("notes")} multiline autoCapitalize="sentences" placeholder="Setup, evaluasi, pelajaran…" />
-            <T variant="caption" color="textMuted">Foto before/after untuk sementara ditambahkan lewat Journal di web.</T>
+          </Card>
+
+          <Card style={{ gap: 12 }}>
+            <T variant="label" color="textMuted">Screenshot chart</T>
+            <View style={styles.photos}>
+              {SLOTS.map(({ slot, label }) => {
+                const p = photos[slot];
+                const shown = p.local ?? (p.removed ? null : p.existing);
+                return (
+                  <View key={slot} style={{ flex: 1, gap: 6 }}>
+                    <T variant="caption" color="textSecondary">{label}</T>
+                    <Pressable
+                      onPress={() => choosePhoto(slot)}
+                      style={[styles.photoBox, { borderColor: colors.border, backgroundColor: colors.surface2 }]}
+                    >
+                      {shown ? (
+                        <Image source={{ uri: shown }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+                      ) : (
+                        <View style={{ alignItems: "center", gap: 4 }}>
+                          <Ionicons name="image-outline" size={24} color={colors.textMuted} />
+                          <T variant="caption" color="textMuted">Pilih foto</T>
+                        </View>
+                      )}
+                    </Pressable>
+                    {shown && (
+                      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                        <T variant="caption" color="primary" style={{ fontWeight: "700" }} onPress={() => choosePhoto(slot)}>Ganti</T>
+                        <T variant="caption" color="error" style={{ fontWeight: "700" }} onPress={() => removePhoto(slot)}>Hapus</T>
+                      </View>
+                    )}
+                  </View>
+                );
+              })}
+            </View>
+            <T variant="caption" color="textMuted">Foto otomatis diperkecil sebelum diupload. Tersimpan juga di Journal web.</T>
           </Card>
 
           {error && (
@@ -224,4 +324,6 @@ const styles = StyleSheet.create({
   presets: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   preset: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
   error: { borderRadius: 10, padding: 10 },
+  photos: { flexDirection: "row", gap: 10 },
+  photoBox: { aspectRatio: 4 / 3, borderWidth: 1, borderRadius: 12, overflow: "hidden", alignItems: "center", justifyContent: "center" },
 });

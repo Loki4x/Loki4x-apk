@@ -25,3 +25,17 @@ export async function apiRequest<T>(method: "GET" | "POST" | "PUT" | "PATCH" | "
   if (!res.ok || !body) throw new Error(body?.error ?? `HTTP ${res.status}`);
   return body;
 }
+
+/** Upload multipart (foto) ke API mobile. Content-Type diisi otomatis oleh fetch (boundary). */
+export async function apiUpload<T>(path: string, form: FormData): Promise<T> {
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  const res = await fetch(`${WEB_URL}${path}`, {
+    method: "POST",
+    headers: { Accept: "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    body: form,
+  });
+  const body = (await res.json().catch(() => null)) as (T & { error?: string }) | null;
+  if (!res.ok || !body) throw new Error(body?.error ?? `HTTP ${res.status}`);
+  return body;
+}
