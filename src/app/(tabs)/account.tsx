@@ -1,5 +1,6 @@
 import { Alert, Linking, Pressable, StyleSheet, View } from "react-native";
 import Constants from "expo-constants";
+import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Badge, Button, Card, Screen, T } from "@/components/ui";
 import { NotificationSettingCard } from "@/components/NotificationSettingCard";
@@ -15,8 +16,9 @@ const THEME_OPTIONS: { mode: ThemeMode; label: string; icon: keyof typeof Ionico
   { mode: "light", label: "Terang", icon: "sunny-outline" },
 ];
 
-const LINKS: { label: string; path: string; icon: keyof typeof Ionicons.glyphMap }[] = [
-  { label: "Upgrade / perpanjang membership", path: "/upgrade", icon: "rocket-outline" },
+/** app: buka layar di aplikasi; web: buka halaman web. */
+const LINKS: { label: string; path: string; icon: keyof typeof Ionicons.glyphMap; app?: boolean }[] = [
+  { label: "Upgrade / perpanjang membership", path: "/upgrade", icon: "rocket-outline", app: true },
   { label: "Pengaturan akun & notifikasi", path: "/settings", icon: "settings-outline" },
   { label: "Program referral", path: "/referral", icon: "gift-outline" },
 ];
@@ -53,6 +55,19 @@ export default function AccountScreen() {
         )}
       </Card>
 
+      {profile?.is_admin && (
+        <Pressable onPress={() => router.push("/admin")}>
+          <Card style={{ flexDirection: "row", alignItems: "center", gap: 12, borderColor: colors.primary }}>
+            <Ionicons name="shield-checkmark-outline" size={22} color={colors.primary} />
+            <View style={{ flex: 1 }}>
+              <T style={{ fontWeight: "700" }}>Menu Admin</T>
+              <T variant="caption" color="textMuted">Sinyal, Akademi, pengumuman</T>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+          </Card>
+        </Pressable>
+      )}
+
       <NotificationSettingCard />
 
       <Card>
@@ -81,12 +96,12 @@ export default function AccountScreen() {
         {LINKS.map((l, i) => (
           <Pressable
             key={l.path}
-            onPress={() => Linking.openURL(`${WEB_URL}${l.path}`)}
+            onPress={() => (l.app ? router.push(l.path) : Linking.openURL(`${WEB_URL}${l.path}`))}
             style={[styles.link, i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border }]}
           >
             <Ionicons name={l.icon} size={18} color={colors.textSecondary} />
             <T variant="bodySm" style={{ flex: 1 }}>{l.label}</T>
-            <Ionicons name="open-outline" size={16} color={colors.textMuted} />
+            <Ionicons name={l.app ? "chevron-forward" : "open-outline"} size={16} color={colors.textMuted} />
           </Pressable>
         ))}
       </Card>

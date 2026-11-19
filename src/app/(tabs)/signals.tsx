@@ -1,12 +1,11 @@
 import { useCallback, useMemo, useState } from "react";
-import { Linking, Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import { Button, Card, Screen, T } from "@/components/ui";
 import { SignalCard } from "@/components/SignalCard";
 import { hasAccess, useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { fetchSignals } from "@/lib/signals";
-import { WEB_URL } from "@/lib/config";
 import { computeSignalStats, isTerminalStatus } from "@/shared/signal-metrics";
 import type { Signal, SignalType } from "@/shared/signal-types";
 
@@ -90,7 +89,7 @@ export default function SignalsScreen() {
           <T variant="bodySm" color="textSecondary">
             Sinyal trading lengkap dengan entry, TP, SL, update real-time, dan notifikasi tersedia untuk VIP & Membership.
           </T>
-          <Button title="Upgrade di web" onPress={() => Linking.openURL(`${WEB_URL}/upgrade`)} />
+          <Button title="Upgrade sekarang" onPress={() => router.push("/upgrade")} />
         </Card>
       </Screen>
     );

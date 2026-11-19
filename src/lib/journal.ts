@@ -1,7 +1,5 @@
 import * as SecureStore from "expo-secure-store";
 import { supabase } from "@/lib/supabase";
-import * as ImagePicker from "expo-image-picker";
-import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
 import * as Sharing from "expo-sharing";
 import { File, Paths } from "expo-file-system";
 import { apiRequest, apiUpload } from "@/lib/api";
@@ -87,6 +85,8 @@ const ERRORS: Record<string, string> = {
   invalid_input: "Ada isian yang belum benar. Cek symbol, harga entry, dan tanggal.",
   membership_required: "Trading Journal khusus member Membership.",
   unauthorized: "Sesi login habis. Silakan login ulang.",
+  forbidden: "Khusus admin.",
+  server_error: "Terjadi kesalahan di server. Coba lagi.",
 };
 
 export const friendlyApiError = (err: unknown) => {
@@ -114,19 +114,9 @@ export const importRows = (accountId: string, rows: ImportRow[]) =>
 
 // ---------- Foto before/after ----------
 
-export type PhotoSlot = "before" | "after";
+export { pickPhoto } from "@/lib/media";
 
-/** Pilih gambar dari galeri lalu perkecil (maks lebar 1600 px, JPEG) supaya di bawah batas 2 MB server. */
-export async function pickPhoto(): Promise<string | null> {
-  const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 1 });
-  if (res.canceled || !res.assets?.[0]) return null;
-  const asset = res.assets[0];
-  const ctx = ImageManipulator.manipulate(asset.uri);
-  if ((asset.width ?? 0) > 1600) ctx.resize({ width: 1600 });
-  const image = await ctx.renderAsync();
-  const saved = await image.saveAsync({ compress: 0.75, format: SaveFormat.JPEG });
-  return saved.uri;
-}
+export type PhotoSlot = "before" | "after";
 
 export function uploadTradePhoto(tradeId: string, slot: PhotoSlot, uri: string) {
   const form = new FormData();

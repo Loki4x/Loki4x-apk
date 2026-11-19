@@ -1,12 +1,11 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Badge, Button, Card, Screen, T } from "@/components/ui";
 import { DisciplineCard } from "@/components/DisciplineCard";
 import { hasAccess, useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
-import { WEB_URL } from "@/lib/config";
 import { formatMoney, formatPnl, todayWib } from "@/lib/format";
 import { exportTradesCsv, fetchAccounts, fetchTrades, getActiveAccountId, setActiveAccountId } from "@/lib/journal";
 import { computeDiscipline } from "@/shared/discipline";
@@ -131,7 +130,7 @@ export default function JournalScreen() {
           <T variant="bodySm" color="textSecondary">
             Catat trade, pasang aturan risiko & target, lihat statistik, dan import statement MT4/MT5.
           </T>
-          <Button title="Upgrade di web" onPress={() => Linking.openURL(`${WEB_URL}/upgrade`)} />
+          <Button title="Upgrade sekarang" onPress={() => router.push("/upgrade")} />
         </Card>
       </Screen>
     );

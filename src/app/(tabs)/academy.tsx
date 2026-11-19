@@ -1,11 +1,10 @@
 import { useCallback, useState } from "react";
-import { Linking, Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Badge, Button, Card, ProgressBar, Screen, T } from "@/components/ui";
 import { hasAccess, useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
-import { WEB_URL } from "@/lib/config";
 import { fetchAttempts, fetchQuizCounts, fetchVideos, fetchWatchedIds } from "@/lib/academy";
 import { ACADEMY_CATEGORIES, ACADEMY_SLUGS, bestAttempt, type AcademyVideo, type QuizAttempt } from "@/shared/academy";
 
@@ -59,7 +58,7 @@ export default function AcademyScreen() {
           <T variant="bodySm" color="textSecondary">
             Video belajar teknikal, fundamental, dan psikologi trading, lengkap dengan progres belajar dan kuis.
           </T>
-          <Button title="Upgrade di web" onPress={() => Linking.openURL(`${WEB_URL}/upgrade`)} />
+          <Button title="Upgrade sekarang" onPress={() => router.push("/upgrade")} />
         </Card>
       </Screen>
     );
