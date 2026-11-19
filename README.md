@@ -62,7 +62,19 @@ aplikasi. Supabase → **Authentication → URL Configuration → Redirect URLs*
 loki4x://auth-callback
 ```
 
-Tidak perlu mengubah apa pun di Google Cloud Console.
+Dengan langkah ini saja, login Google membuka halaman Google di browser lalu kembali ke aplikasi.
+
+**Popup "Pilih akun" bawaan Android (opsional, disarankan):**
+
+1. Google Cloud Console, di project yang sama dengan OAuth client Google yang dipakai Supabase →
+   **APIs & Services → Credentials → Create credentials → OAuth client ID → Android**:
+   - Package name: `id.web.loki4xacademy.app`
+   - SHA-1: `5E:8F:16:06:2E:A3:CD:2C:4A:0D:54:78:76:BA:A6:F3:8C:AB:F6:25` (debug keystore yang dipakai build saat ini;
+     kalau nanti pakai keystore rilis sendiri / Google Play, tambahkan juga SHA-1 keystore itu).
+2. GitHub repo ini → Settings → Secrets and variables → Actions → **Variables** →
+   `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` = **Client ID** dari Supabase → Authentication → Providers → Google
+   (client ID tipe *Web application*, berakhiran `.apps.googleusercontent.com`; bukan Client Secret).
+3. Build ulang APK. Kalau popup gagal (mis. SHA-1 belum terdaftar), aplikasi otomatis memakai alur browser.
 
 ## Pengembangan
 

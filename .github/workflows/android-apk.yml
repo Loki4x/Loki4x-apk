@@ -8,6 +8,7 @@ name: Build Android APK
 #   EXPO_PUBLIC_SUPABASE_URL       = NEXT_PUBLIC_SUPABASE_URL dari project web (Vercel)
 #   EXPO_PUBLIC_SUPABASE_ANON_KEY  = NEXT_PUBLIC_SUPABASE_ANON_KEY dari project web (Vercel)
 #   EXPO_PUBLIC_WEB_URL            = (opsional) default https://www.loki4xacademy.web.id
+#   EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID = (opsional) Client ID Google di Supabase → login Google pakai popup akun Android
 #
 # Opsional untuk push notification (tab "Secrets"):
 #   GOOGLE_SERVICES_JSON           = isi file google-services.json dari Firebase (boleh JSON mentah atau base64)
@@ -32,6 +33,7 @@ jobs:
       EXPO_PUBLIC_SUPABASE_URL: ${{ vars.EXPO_PUBLIC_SUPABASE_URL }}
       EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
       EXPO_PUBLIC_WEB_URL: ${{ vars.EXPO_PUBLIC_WEB_URL || 'https://www.loki4xacademy.web.id' }}
+      EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: ${{ vars.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID }}
     steps:
       - uses: actions/checkout@v5
 
