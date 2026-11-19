@@ -38,3 +38,38 @@ export async function markRead(userId: string, id: string) {
 export async function markAllRead(userId: string) {
   await supabase.from("notifications").update({ is_read: true }).eq("user_id", userId).eq("is_read", false);
 }
+
+// ---------- Notifikasi sinyal → detail sinyal ----------
+
+/**
+ * Notifikasi sinyal baru di lonceng tidak menyimpan id sinyal, jadi dicocokkan dari isinya:
+ * judul "🔔 Sinyal baru: XAUUSD BUY" / "🔔 New signal: XAUUSD BUY" dan isi "Entry 3747.3 · ...".
+ */
+export function parseSignalNotification(n: Pick<InboxItem, "title" | "message">): { symbol: string; side: "BUY" | "SELL"; entry: number } | null {
+  const head = /(?:Sinyal baru|New signal):\s*([A-Z0-9.]+)\s+(BUY|SELL)/i.exec(n.title);
+  const entry = /Entry\s+(-?[\d.]+)/i.exec(n.message);
+  if (!head || !entry) return null;
+  const value = Number(entry[1]);
+  if (!Number.isFinite(value)) return null;
+  return { symbol: head[1].toUpperCase(), side: head[2].toUpperCase() as "BUY" | "SELL", entry: value };
+}
+
+/** Cari id sinyal yang paling cocok (symbol, arah, harga entry, waktu paling dekat dengan notifikasi). */
+export async function findSignalForNotification(n: InboxItem): Promise<string | null> {
+  const p = parseSignalNotification(n);
+  if (!p) return null;
+  const { data } = await supabase
+    .from("signals")
+    .select("id, entry_price, posted_at")
+    .eq("symbol", p.symbol)
+    .eq("side", p.side)
+    .gte("entry_price", p.entry - 1e-6)
+    .lte("entry_price", p.entry + 1e-6)
+    .limit(20);
+  if (!data || data.length === 0) return null;
+  const at = new Date(n.created_at).getTime();
+  const best = [...data].sort(
+    (a, b) => Math.abs(new Date(a.posted_at).getTime() - at) - Math.abs(new Date(b.posted_at).getTime() - at)
+  )[0];
+  return String(best.id);
+}

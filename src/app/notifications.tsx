@@ -1,13 +1,13 @@
 import { useCallback, useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
-import { Redirect, useFocusEffect } from "expo-router";
+import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
+import { Redirect, router, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Card, Screen, T } from "@/components/ui";
 import { BackHeader } from "@/components/form";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { formatDateTimeWib } from "@/lib/format";
-import { fetchInbox, markAllRead, markRead, type InboxItem } from "@/lib/notifications";
+import { fetchInbox, findSignalForNotification, markAllRead, markRead, parseSignalNotification, type InboxItem } from "@/lib/notifications";
 
 type IconName = keyof typeof import("@expo/vector-icons").Ionicons.glyphMap;
 const TYPE_ICON: Record<string, IconName> = {
@@ -25,6 +25,7 @@ export default function NotificationsScreen() {
   const [open, setOpen] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [opening, setOpening] = useState<string | null>(null);
   const userId = session?.user.id;
 
   const load = useCallback(async () => {
@@ -48,11 +49,23 @@ export default function NotificationsScreen() {
   const unread = items?.filter((n) => !n.is_read).length ?? 0;
 
   async function toggle(n: InboxItem) {
-    setOpen((o) => (o === n.id ? null : n.id));
     if (!n.is_read && userId) {
       setItems((list) => list?.map((x) => (x.id === n.id ? { ...x, is_read: true } : x)) ?? null);
-      await markRead(userId, n.id).catch(() => {});
+      markRead(userId, n.id).catch(() => {});
     }
+    // Notifikasi sinyal → buka detail sinyalnya.
+    if (parseSignalNotification(n)) {
+      setOpening(n.id);
+      const id = await findSignalForNotification(n).catch(() => null);
+      setOpening(null);
+      if (id) {
+        router.push(`/signal/${id}`);
+        return;
+      }
+      setError("Sinyal ini sudah tidak tersedia.");
+      return;
+    }
+    setOpen((o) => (o === n.id ? null : n.id));
   }
 
   return (
@@ -86,12 +99,18 @@ export default function NotificationsScreen() {
           <T variant="bodySm" color="textMuted">Belum ada notifikasi.</T>
         </Card>
       )}
-      {items?.map((n) => (
-        <Pressable key={n.id} onPress={() => toggle(n)}>
+      {items?.map((n) => {
+        const isSignal = !!parseSignalNotification(n);
+        return (
+        <Pressable key={n.id} onPress={() => toggle(n)} disabled={opening !== null}>
           {({ pressed }) => (
             <Card style={[styles.item, { opacity: pressed ? 0.85 : 1, borderColor: n.is_read ? colors.border : colors.primary }]}>
               <View style={[styles.icon, { backgroundColor: n.is_read ? colors.surface2 : colors.primarySubtle }]}>
-                <Ionicons name={TYPE_ICON[n.type] ?? "notifications-outline"} size={18} color={n.is_read ? colors.textMuted : colors.primary} />
+                <Ionicons
+                  name={isSignal ? "pulse-outline" : (TYPE_ICON[n.type] ?? "notifications-outline")}
+                  size={18}
+                  color={n.is_read ? colors.textMuted : colors.primary}
+                />
               </View>
               <View style={{ flex: 1, gap: 3 }}>
                 <T variant="bodySm" style={{ fontWeight: n.is_read ? "500" : "700" }}>{n.title}</T>
@@ -99,10 +118,17 @@ export default function NotificationsScreen() {
                 <T variant="caption" color="textMuted">{formatDateTimeWib(n.created_at)} WIB</T>
               </View>
               {!n.is_read && <View style={[styles.dot, { backgroundColor: colors.primary }]} />}
+              {isSignal &&
+                (opening === n.id ? (
+                  <ActivityIndicator size="small" color={colors.primary} style={{ alignSelf: "center" }} />
+                ) : (
+                  <Ionicons name="chevron-forward" size={18} color={colors.textMuted} style={{ alignSelf: "center" }} />
+                ))}
             </Card>
           )}
         </Pressable>
-      ))}
+        );
+      })}
     </Screen>
   );
 }
