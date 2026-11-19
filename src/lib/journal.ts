@@ -83,7 +83,8 @@ export interface TradeInput {
 
 const ERRORS: Record<string, string> = {
   invalid_input: "Ada isian yang belum benar. Cek symbol, harga entry, dan tanggal.",
-  membership_required: "Trading Journal khusus member Membership.",
+  membership_required: "Fitur ini khusus member Membership.",
+  vip_required: "Fitur ini khusus member VIP.",
   unauthorized: "Sesi login habis. Silakan login ulang.",
   forbidden: "Khusus admin.",
   server_error: "Terjadi kesalahan di server. Coba lagi.",
