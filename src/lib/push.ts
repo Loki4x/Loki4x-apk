@@ -85,6 +85,15 @@ export function routeForUrl(url: unknown): string {
   if (path.startsWith("/signals")) return "/signals";
   if (path.startsWith("/trades") || path.startsWith("/reports")) return "/journal";
   if (path.startsWith("/academy")) return "/academy";
-  if (path.startsWith("/settings") || path.startsWith("/upgrade")) return "/account";
+  if (path.startsWith("/community")) {
+    const room = /[?&]room=(ANNOUNCEMENT|FREE|VIP|MEMBERSHIP)/.exec(path)?.[1];
+    return room ? `/community?room=${room}` : "/community";
+  }
+  if (path.startsWith("/news")) return "/calendar";
+  if (path.startsWith("/upgrade")) return "/upgrade";
+  if (path.startsWith("/settings")) return "/settings";
+  for (const p of ["/chat", "/referral", "/notifications", "/cot", "/positioning", "/market-news", "/calculator"]) {
+    if (path.startsWith(p)) return p;
+  }
   return "/";
 }

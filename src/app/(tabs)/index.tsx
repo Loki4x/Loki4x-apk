@@ -1,9 +1,11 @@
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Badge, Button, Card, Screen, T } from "@/components/ui";
 import { MarketSessionsCard } from "@/components/MarketSessionsCard";
+import { ToolsGrid } from "@/components/ToolsGrid";
+import { unreadCount } from "@/lib/notifications";
 import { hasAccess, useAuth, type Tier } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { apiGet } from "@/lib/api";
@@ -69,6 +71,14 @@ export default function DashboardScreen() {
   const [news, setNews] = useState<NewsEvent[] | null>(null);
   const [newsError, setNewsError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [unread, setUnread] = useState(0);
+
+  // Jumlah notifikasi belum dibaca diperbarui tiap tab Dashboard dibuka.
+  useFocusEffect(
+    useCallback(() => {
+      if (session) unreadCount(session.user.id).then(setUnread).catch(() => {});
+    }, [session])
+  );
 
   const tier = profile?.effectiveTier ?? "FREE";
   const isMember = hasAccess(tier, "MEMBERSHIP");
@@ -113,6 +123,14 @@ export default function DashboardScreen() {
           <Badge label={TIER_LABEL[tier]} tone={tier === "FREE" ? "muted" : "primary"} />
           {expiry && <T variant="caption" color="textMuted">aktif s/d {expiry}</T>}
         </View>
+        <Pressable onPress={() => router.push("/notifications")} hitSlop={10} style={[styles.bell, { backgroundColor: colors.surface2 }]}>
+          <Ionicons name="notifications-outline" size={20} color={colors.text} />
+          {unread > 0 && (
+            <View style={[styles.badgeDot, { backgroundColor: colors.error }]}>
+              <T variant="caption" style={{ color: "#FFFFFF", fontSize: 9, fontWeight: "800" }}>{unread > 9 ? "9+" : String(unread)}</T>
+            </View>
+          )}
+        </Pressable>
       </View>
 
       {!isMember && (
@@ -126,6 +144,8 @@ export default function DashboardScreen() {
       )}
 
       <MarketSessionsCard />
+
+      <ToolsGrid tier={tier} />
 
       {isMember && (
         <Card>
@@ -199,6 +219,8 @@ export default function DashboardScreen() {
 }
 
 const styles = StyleSheet.create({
+  bell: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center", marginLeft: 10 },
+  badgeDot: { position: "absolute", top: -2, right: -2, minWidth: 16, height: 16, borderRadius: 8, alignItems: "center", justifyContent: "center", paddingHorizontal: 3 },
   greeting: { flexDirection: "row", alignItems: "flex-start", gap: 12 },
   cardHeader: { flexDirection: "row", alignItems: "center", gap: 6 },
   kpis: { flexDirection: "row", flexWrap: "wrap", gap: 8 },

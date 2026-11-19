@@ -232,6 +232,8 @@ export default function JournalScreen() {
             />
           </View>
 
+          <Button title="📊 Report & Performance" variant="secondary" onPress={() => router.push(`/reports?account=${account.id}`)} />
+
           <DisciplineCard summary={view.discipline} currency={cur} onEdit={() => router.push(`/journal-rules?account=${account.id}`)} />
 
           {[

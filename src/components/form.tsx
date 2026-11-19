@@ -28,6 +28,7 @@ export function Field({
   multiline,
   hint,
   autoCapitalize = "none",
+  secure,
 }: {
   label: string;
   value: string;
@@ -37,6 +38,8 @@ export function Field({
   multiline?: boolean;
   hint?: string;
   autoCapitalize?: "none" | "characters" | "sentences";
+  /** Sembunyikan isi (kata sandi). */
+  secure?: boolean;
 }) {
   const { colors } = useTheme();
   const { t } = useI18n();
@@ -52,6 +55,7 @@ export function Field({
         multiline={multiline}
         autoCapitalize={autoCapitalize}
         autoCorrect={false}
+        secureTextEntry={secure}
         style={[
           styles.input,
           { backgroundColor: colors.surface2, borderColor: colors.border, color: colors.text },

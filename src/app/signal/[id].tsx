@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { Image, Linking, Pressable, StyleSheet, View } from "react-native";
 import { Redirect, router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Badge, Card, Screen, T } from "@/components/ui";
+import { Badge, Button, Card, Screen, T } from "@/components/ui";
 import { hasAccess, useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { fetchSignal, formatPrice, STATUS_META, UPDATE_LABEL } from "@/lib/signals";
@@ -153,6 +153,18 @@ export default function SignalDetailScreen() {
           </View>
         ))}
       </Card>
+      {!isTerminalStatus(signal.status) && signal.stop_loss !== null && (
+        <Button
+          title="Hitung lot untuk sinyal ini"
+          variant="secondary"
+          onPress={() =>
+            router.push(
+              `/calculator?symbol=${encodeURIComponent(signal.symbol)}&dir=${signal.side}&entry=${signal.entry_price}&sl=${signal.stop_loss}` +
+                (signal.take_profit !== null ? `&tp=${signal.take_profit}` : "")
+            )
+          }
+        />
+      )}
 
       {signal.notes ? (
         <Card>
