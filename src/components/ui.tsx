@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme, type ThemeColors } from "@/lib/theme";
+import { trNode, useI18n } from "@/lib/i18n";
 
 export function Screen({
   children,
@@ -87,9 +88,10 @@ export function T({
   onPress?: () => void;
 }) {
   const { colors } = useTheme();
+  useI18n(); // render ulang saat bahasa diganti
   return (
     <Text numberOfLines={numberOfLines} onPress={onPress} style={[TEXT_SIZES[variant], { color: colors[color] }, style]}>
-      {children}
+      {trNode(children)}
     </Text>
   );
 }
@@ -110,6 +112,7 @@ export function Button({
   style?: StyleProp<ViewStyle>;
 }) {
   const { colors } = useTheme();
+  const { t } = useI18n();
   const primary = variant === "primary";
   return (
     <Pressable
@@ -129,7 +132,7 @@ export function Button({
       {loading ? (
         <ActivityIndicator color={primary ? "#FFFFFF" : colors.text} />
       ) : (
-        <Text style={{ color: primary ? "#FFFFFF" : colors.text, fontWeight: "600", fontSize: 15 }}>{title}</Text>
+        <Text style={{ color: primary ? "#FFFFFF" : colors.text, fontWeight: "600", fontSize: 15 }}>{t(title)}</Text>
       )}
     </Pressable>
   );
@@ -137,6 +140,7 @@ export function Button({
 
 export function Badge({ label, tone }: { label: string; tone: "success" | "error" | "warning" | "primary" | "muted" }) {
   const { colors } = useTheme();
+  const { t } = useI18n();
   const map = {
     success: [colors.successSubtle, colors.success],
     error: [colors.errorSubtle, colors.error],
@@ -147,7 +151,7 @@ export function Badge({ label, tone }: { label: string; tone: "success" | "error
   const [bg, fg] = map[tone];
   return (
     <View style={[styles.badge, { backgroundColor: bg }]}>
-      <Text style={{ color: fg, fontSize: 11, fontWeight: "700" }}>{label}</Text>
+      <Text style={{ color: fg, fontSize: 11, fontWeight: "700" }}>{t(label)}</Text>
     </View>
   );
 }

@@ -20,6 +20,7 @@ import {
   type TradeInput,
 } from "@/lib/journal";
 import { EMOTION_LABEL, EMOTIONS, STRATEGY_PRESETS } from "@/shared/journal-tags";
+import { useI18n } from "@/lib/i18n";
 
 const EMPTY: TradeInput = {
   symbol: "",
@@ -58,6 +59,7 @@ export default function TradeFormScreen() {
   const { id, account } = useLocalSearchParams<{ id: string; account?: string }>();
   const { session, profile } = useAuth();
   const { colors } = useTheme();
+  const { t } = useI18n();
   const isNew = id === "new";
   const [form, setForm] = useState<TradeInput>(EMPTY);
   const [loading, setLoading] = useState(!isNew);
@@ -150,7 +152,7 @@ export default function TradeFormScreen() {
     }
     setSaving(false);
     if (photoError) {
-      Alert.alert("Trade tersimpan", `Tapi foto gagal diupload: ${photoError}. Coba tambahkan lagi lewat Edit trade.`, [
+      Alert.alert(t("Trade tersimpan"), t("Tapi foto gagal diupload: {error}. Coba tambahkan lagi lewat Edit trade.", { error: t(photoError) }), [
         { text: "OK", onPress: () => router.back() },
       ]);
       return;
@@ -172,10 +174,10 @@ export default function TradeFormScreen() {
   }
 
   function confirmDelete() {
-    Alert.alert("Hapus trade", "Trade ini akan dihapus permanen dari jurnal.", [
-      { text: "Batal", style: "cancel" },
+    Alert.alert(t("Hapus trade"), t("Trade ini akan dihapus permanen dari jurnal."), [
+      { text: t("Batal"), style: "cancel" },
       {
-        text: "Hapus",
+        text: t("Hapus"),
         style: "destructive",
         onPress: async () => {
           try {

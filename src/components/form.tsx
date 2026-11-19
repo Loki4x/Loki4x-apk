@@ -5,6 +5,7 @@ import { WEB_URL } from "@/lib/config";
 import { Ionicons } from "@expo/vector-icons";
 import { T } from "@/components/ui";
 import { useTheme } from "@/lib/theme";
+import { useI18n } from "@/lib/i18n";
 
 export function BackHeader({ title, fallback = "/" }: { title: string; fallback?: string }) {
   const { colors } = useTheme();
@@ -38,13 +39,14 @@ export function Field({
   autoCapitalize?: "none" | "characters" | "sentences";
 }) {
   const { colors } = useTheme();
+  const { t } = useI18n();
   return (
     <View style={{ gap: 6, flex: 1 }}>
       <T variant="bodySm" color="textSecondary">{label}</T>
       <TextInput
         value={value}
         onChangeText={onChangeText}
-        placeholder={placeholder}
+        placeholder={placeholder ? t(placeholder) : placeholder}
         placeholderTextColor={colors.textMuted}
         keyboardType={keyboardType}
         multiline={multiline}

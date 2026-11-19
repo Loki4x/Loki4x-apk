@@ -24,12 +24,14 @@ import {
   wibDateTime,
 } from "@/lib/admin";
 import type { Signal, SignalStatus, SignalUpdate, SignalUpdateType } from "@/shared/signal-types";
+import { useI18n } from "@/lib/i18n";
 
 /** Admin: ubah status/hasil sinyal, kirim update, atau hapus. */
 export default function AdminSignalDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { session, profile } = useAuth();
   const { colors } = useTheme();
+  const { t } = useI18n();
   const [signal, setSignal] = useState<Signal | null | undefined>(undefined);
   const [updates, setUpdates] = useState<SignalUpdate[]>([]);
 
@@ -124,17 +126,17 @@ export default function AdminSignalDetail() {
 
   function confirmDelete() {
     if (!signal) return;
-    Alert.alert("Hapus sinyal", `Sinyal ${signal.symbol} ${signal.side} akan dihapus permanen (juga dari track record).`, [
-      { text: "Batal", style: "cancel" },
+    Alert.alert(t("Hapus sinyal"), t("Sinyal {name} akan dihapus permanen (juga dari track record).", { name: `${signal.symbol} ${signal.side}` }), [
+      { text: t("Batal"), style: "cancel" },
       {
-        text: "Hapus",
+        text: t("Hapus"),
         style: "destructive",
         onPress: async () => {
           try {
             await deleteSignal(signal.id);
             router.back();
           } catch (err) {
-            Alert.alert("Gagal", friendlyApiError(err));
+            Alert.alert(t("Gagal"), t(friendlyApiError(err)));
           }
         },
       },

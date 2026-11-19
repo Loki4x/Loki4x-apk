@@ -7,6 +7,7 @@ import { hasAccess, useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { fetchAccounts, friendlyApiError, saveRules } from "@/lib/journal";
 import type { TradingAccount } from "@/shared/journal-types";
+import { useI18n } from "@/lib/i18n";
 
 type RuleKey = "max_daily_loss_pct" | "max_trades_per_day" | "max_consecutive_losses" | "monthly_profit_target" | "target_win_rate";
 
@@ -16,6 +17,7 @@ export default function JournalRulesScreen() {
   const { account: accountId } = useLocalSearchParams<{ account?: string }>();
   const { session, profile } = useAuth();
   const { colors } = useTheme();
+  const { t } = useI18n();
   const [account, setAccount] = useState<TradingAccount | null>(null);
   const [values, setValues] = useState<Record<RuleKey, string>>({
     max_daily_loss_pct: "",
@@ -72,7 +74,7 @@ export default function JournalRulesScreen() {
     <Screen>
       <BackHeader title="Aturan & Target" fallback="/journal" />
       <T variant="bodySm" color="textSecondary">
-        {account ? `Untuk akun ${account.name}. ` : ""}Kosongkan kolom yang tidak ingin dipakai. Aturan & target ini sama dengan yang ada
+        {account ? `${t("Untuk akun {name}.", { name: account.name })} ` : ""}Kosongkan kolom yang tidak ingin dipakai. Aturan & target ini sama dengan yang ada
         di web.
       </T>
 
@@ -89,7 +91,7 @@ export default function JournalRulesScreen() {
       <Card style={{ gap: 14 }}>
         <T variant="label" color="textMuted">Target bulanan</T>
         <View style={styles.row}>
-          <Field label={`Target profit (${money})`} value={values.monthly_profit_target} onChangeText={set("monthly_profit_target")} keyboardType="decimal-pad" placeholder={money === "Rp" ? "5000000" : "500"} />
+          <Field label={t("Target profit ({money})", { money })} value={values.monthly_profit_target} onChangeText={set("monthly_profit_target")} keyboardType="decimal-pad" placeholder={money === "Rp" ? "5000000" : "500"} />
           <Field label="Target win rate (%)" value={values.target_win_rate} onChangeText={set("target_win_rate")} keyboardType="decimal-pad" placeholder="60" />
         </View>
       </Card>

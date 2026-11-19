@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import { isPushPreferred, registerForPush, unregisterPush } from "@/lib/push";
+import { isLocale, setLocale } from "@/lib/i18n";
 
 export type Tier = "FREE" | "VIP" | "MEMBERSHIP";
 
@@ -14,6 +15,8 @@ export interface Profile {
   effectiveTier: Tier;
   vip_expires_at: string | null;
   is_admin: boolean;
+  /** Bahasa pilihan user (profiles.language), sama dengan web. */
+  language: "id" | "en" | null;
 }
 
 interface AuthContextValue {
@@ -32,7 +35,7 @@ export const hasAccess = (tier: Tier | undefined, required: Tier) => RANK[tier ?
 async function loadProfile(userId: string, email: string | undefined): Promise<Profile | null> {
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, full_name, tier, vip_expires_at, is_admin")
+    .select("id, full_name, tier, vip_expires_at, is_admin, language")
     .eq("id", userId)
     .maybeSingle();
   if (error || !data) return null;
@@ -46,6 +49,7 @@ async function loadProfile(userId: string, email: string | undefined): Promise<P
     effectiveTier: stored !== "FREE" && expired ? "FREE" : stored,
     vip_expires_at: data.vip_expires_at,
     is_admin: !!data.is_admin,
+    language: isLocale(data.language) ? data.language : null,
   };
 }
 
@@ -82,6 +86,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sub.subscription.unsubscribe();
     };
   }, []);
+
+  // Bahasa mengikuti pilihan di profil (diatur dari web atau aplikasi).
+  useEffect(() => {
+    if (profile?.language) setLocale(profile.language, false);
+  }, [profile?.language]);
 
   const refreshProfile = useCallback(async () => {
     if (session) setProfile(await loadProfile(session.user.id, session.user.email));

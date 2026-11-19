@@ -103,9 +103,9 @@ export function fmtClock(min: number): string {
   return `${String(Math.floor(n / 60)).padStart(2, "0")}:${String(n % 60).padStart(2, "0")}`;
 }
 
-export function fmtDuration(totalMin: number): string {
+export function fmtDuration(totalMin: number, english = false): string {
   const h = Math.floor(totalMin / 60);
   const m = totalMin % 60;
-  if (h >= 24) return `${Math.floor(h / 24)} hari ${h % 24} jam`;
-  return h > 0 ? `${h}j ${m}m` : `${m}m`;
+  if (h >= 24) return english ? `${Math.floor(h / 24)}d ${h % 24}h` : `${Math.floor(h / 24)} hari ${h % 24} jam`;
+  return h > 0 ? `${h}${english ? "h" : "j"} ${m}m` : `${m}m`;
 }

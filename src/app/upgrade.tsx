@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { useI18n } from "@/lib/i18n";
 import { Linking, Pressable, StyleSheet, View } from "react-native";
 import { Redirect, router, useFocusEffect } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
@@ -29,6 +30,7 @@ const VIP_STATUS: Record<"PENDING" | "APPROVED" | "REJECTED", { label: string; t
 export default function UpgradeScreen() {
   const { session, refreshProfile } = useAuth();
   const { colors } = useTheme();
+  const { t } = useI18n();
   const [info, setInfo] = useState<UpgradeInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -103,7 +105,7 @@ export default function UpgradeScreen() {
             )}
             {status.expired && status.expiresAt && (
               <T variant="bodySm" color="warning">
-                Masa aktif {status.storedTier} kamu berakhir pada {formatDate(status.expiresAt)}. Perpanjang untuk membuka kembali fitur berbayar.
+                {t("Masa aktif {tier} kamu berakhir pada {date}. Perpanjang untuk membuka kembali fitur berbayar.", { tier: status.storedTier, date: formatDate(status.expiresAt) })}
               </T>
             )}
             {!isFree && !status.permanent && info.plans.length > 0 && (
@@ -116,7 +118,7 @@ export default function UpgradeScreen() {
           {info.plans.length === 0 ? (
             <Card>
               <T variant="bodySm" color="textSecondary">
-                Akun kamu aktif di tier {status.tier} tanpa batas waktu. Nggak perlu bayar lagi.
+                {t("Akun kamu aktif di tier {tier} tanpa batas waktu. Nggak perlu bayar lagi.", { tier: status.tier })}
               </T>
             </Card>
           ) : (
@@ -141,7 +143,7 @@ export default function UpgradeScreen() {
                       </View>
                     ))}
                     <Button
-                      title={`${planCtaLabel(plan, status.tier)} — ${formatIdr(info.priceIdr[plan])}`}
+                      title={`${t(planCtaLabel(plan, status.tier))} — ${formatIdr(info.priceIdr[plan])}`}
                       variant={p.featured ? "primary" : "secondary"}
                       onPress={() => router.push(`/payment?plan=${plan}`)}
                     />
@@ -193,7 +195,7 @@ export default function UpgradeScreen() {
                   </View>
                   {info.brokers[broker] && (
                     <Button
-                      title={`Daftar akun ${info.brokers[broker].name}`}
+                      title={t("Daftar akun {broker}", { broker: info.brokers[broker].name })}
                       onPress={() => WebBrowser.openBrowserAsync(info.brokers[broker].link)}
                     />
                   )}

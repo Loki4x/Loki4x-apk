@@ -9,6 +9,7 @@ import { useTheme } from "@/lib/theme";
 import { formatMoney } from "@/lib/format";
 import { createAccount, deleteAccount, fetchAccounts, friendlyApiError, setActiveAccountId } from "@/lib/journal";
 import type { TradingAccount } from "@/shared/journal-types";
+import { useI18n } from "@/lib/i18n";
 
 const MAX_ACCOUNTS = 5;
 
@@ -16,6 +17,7 @@ const MAX_ACCOUNTS = 5;
 export default function JournalAccountsScreen() {
   const { session, profile } = useAuth();
   const { colors } = useTheme();
+  const { t } = useI18n();
   const [accounts, setAccounts] = useState<TradingAccount[] | null>(null);
   const [name, setName] = useState("");
   const [balance, setBalance] = useState("");
@@ -63,10 +65,10 @@ export default function JournalAccountsScreen() {
   }
 
   function confirmDelete(a: TradingAccount) {
-    Alert.alert("Hapus akun", `Akun "${a.name}" dan SEMUA trade di dalamnya akan dihapus permanen.`, [
-      { text: "Batal", style: "cancel" },
+    Alert.alert(t("Hapus akun"), t('Akun "{name}" dan SEMUA trade di dalamnya akan dihapus permanen.', { name: a.name }), [
+      { text: t("Batal"), style: "cancel" },
       {
-        text: "Hapus",
+        text: t("Hapus"),
         style: "destructive",
         onPress: async () => {
           setError(null);

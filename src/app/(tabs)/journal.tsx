@@ -11,6 +11,7 @@ import { exportTradesCsv, fetchAccounts, fetchTrades, getActiveAccountId, setAct
 import { computeDiscipline } from "@/shared/discipline";
 import { EMOTION_LABEL, isEmotion } from "@/shared/journal-tags";
 import type { Trade, TradingAccount } from "@/shared/journal-types";
+import { useI18n } from "@/lib/i18n";
 
 const SESSION_LABEL: Record<string, string> = { LONDON: "London", NEW_YORK: "New York", ASIA: "Asia", OVERLAP: "Overlap" };
 
@@ -40,6 +41,7 @@ function groupBy(closed: Trade[], keyOf: (t: Trade) => string | null): GroupRow[
 export default function JournalScreen() {
   const { session, profile } = useAuth();
   const { colors } = useTheme();
+  const { t: tx } = useI18n();
   const [accounts, setAccounts] = useState<TradingAccount[] | null>(null);
   const [activeId, setActiveIdState] = useState<string | null>(null);
   // Ref supaya load() tidak dibuat ulang (dan memuat dua kali) setiap akun aktif berganti.
@@ -103,11 +105,11 @@ export default function JournalScreen() {
       discipline: computeDiscipline(account, trades, today),
       bySession: groupBy(closed, (t) => (t.session ? SESSION_LABEL[t.session] ?? t.session : null)),
       byStrategy: groupBy(closed, (t) => t.strategy),
-      byEmotion: groupBy(closed, (t) => (t.emotion && isEmotion(t.emotion) ? EMOTION_LABEL[t.emotion] : null)),
-      byPlan: groupBy(closed, (t) => (t.followed_plan === true ? "Sesuai rencana" : t.followed_plan === false ? "Melanggar rencana" : null)),
+      byEmotion: groupBy(closed, (t) => (t.emotion && isEmotion(t.emotion) ? tx(EMOTION_LABEL[t.emotion]) : null)),
+      byPlan: groupBy(closed, (t) => (t.followed_plan === true ? tx("Sesuai rencana") : t.followed_plan === false ? tx("Melanggar rencana") : null)),
       recent: [...trades].reverse(),
     };
-  }, [account, trades]);
+  }, [account, trades, tx]);
 
   async function selectAccount(id: string) {
     if (!userId || id === activeId) return;
@@ -279,7 +281,7 @@ export default function JournalScreen() {
                   <T variant="caption" color="textMuted">
                     {t.trade_date}
                     {t.strategy ? ` · ${t.strategy}` : ""}
-                    {t.emotion && isEmotion(t.emotion) ? ` · ${EMOTION_LABEL[t.emotion]}` : ""}
+                    {t.emotion && isEmotion(t.emotion) ? ` · ${tx(EMOTION_LABEL[t.emotion])}` : ""}
                   </T>
                 </View>
                 <View style={{ alignItems: "flex-end" }}>

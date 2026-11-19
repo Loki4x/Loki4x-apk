@@ -138,7 +138,7 @@ export default function DashboardScreen() {
             <T variant="bodySm" color="textMuted">Memuat…</T>
           ) : summary === null ? (
             <T variant="bodySm" color="textMuted">
-              Belum ada akun journaling. Buat dulu di halaman Journal (web), nanti otomatis muncul di sini.
+              Belum ada akun journaling. Buat dulu di tab Journal.
             </T>
           ) : (
             <View style={styles.kpis}>

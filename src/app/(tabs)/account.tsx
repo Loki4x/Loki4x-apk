@@ -1,4 +1,5 @@
 import { Alert, Linking, Pressable, StyleSheet, View } from "react-native";
+import { useI18n, type Locale } from "@/lib/i18n";
 import Constants from "expo-constants";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -16,6 +17,11 @@ const THEME_OPTIONS: { mode: ThemeMode; label: string; icon: keyof typeof Ionico
   { mode: "light", label: "Terang", icon: "sunny-outline" },
 ];
 
+const LANGS: { locale: Locale; label: string; flag: string }[] = [
+  { locale: "id", label: "Indonesia", flag: "🇮🇩" },
+  { locale: "en", label: "English", flag: "🇬🇧" },
+];
+
 /** app: buka layar di aplikasi; web: buka halaman web. */
 const LINKS: { label: string; path: string; icon: keyof typeof Ionicons.glyphMap; app?: boolean }[] = [
   { label: "Upgrade / perpanjang membership", path: "/upgrade", icon: "rocket-outline", app: true },
@@ -26,12 +32,13 @@ const LINKS: { label: string; path: string; icon: keyof typeof Ionicons.glyphMap
 export default function AccountScreen() {
   const { profile, session, signOut } = useAuth();
   const { colors, mode, setMode } = useTheme();
+  const { t, locale, setLocale } = useI18n();
   const tier = profile?.effectiveTier ?? "FREE";
 
   function confirmSignOut() {
-    Alert.alert("Keluar", "Yakin mau keluar dari akun ini?", [
-      { text: "Batal", style: "cancel" },
-      { text: "Keluar", style: "destructive", onPress: () => signOut() },
+    Alert.alert(t("Keluar"), t("Yakin mau keluar dari akun ini?"), [
+      { text: t("Batal"), style: "cancel" },
+      { text: t("Keluar"), style: "destructive", onPress: () => signOut() },
     ]);
   }
 
@@ -90,6 +97,29 @@ export default function AccountScreen() {
             );
           })}
         </View>
+      </Card>
+
+      <Card>
+        <T variant="label" color="textMuted">Bahasa</T>
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          {LANGS.map((o) => {
+            const active = locale === o.locale;
+            return (
+              <Pressable
+                key={o.locale}
+                onPress={() => setLocale(o.locale)}
+                style={[
+                  styles.themeOption,
+                  { borderColor: active ? colors.primary : colors.border, backgroundColor: active ? colors.primarySubtle : colors.surface2 },
+                ]}
+              >
+                <T variant="body">{o.flag}</T>
+                <T variant="caption" style={{ color: active ? colors.primary : colors.textSecondary, fontWeight: "600" }}>{o.label}</T>
+              </Pressable>
+            );
+          })}
+        </View>
+        <T variant="caption" color="textMuted">Bahasa juga dipakai untuk web, email, dan notifikasi.</T>
       </Card>
 
       <Card style={{ gap: 0, paddingVertical: 4 }}>

@@ -10,6 +10,7 @@ import { friendlyApiError } from "@/lib/journal";
 import { fetchVideos } from "@/lib/academy";
 import { addQuizQuestion, addVideo, deleteQuizQuestion, deleteVideo, fetchQuizQuestions, type AdminQuizQuestion } from "@/lib/admin";
 import { ACADEMY_CATEGORIES, type AcademyCategory, type AcademyVideo } from "@/shared/academy";
+import { useI18n } from "@/lib/i18n";
 
 const LETTERS = ["A", "B", "C", "D", "E", "F"];
 const CATEGORY_OPTIONS = Object.values(ACADEMY_CATEGORIES).map((c) => ({ value: c.db, label: c.title }));
@@ -18,6 +19,7 @@ const CATEGORY_OPTIONS = Object.values(ACADEMY_CATEGORIES).map((c) => ({ value: 
 export default function AdminAcademy() {
   const { session, profile } = useAuth();
   const { colors } = useTheme();
+  const { t } = useI18n();
   const [category, setCategory] = useState<AcademyCategory>("TECHNICAL");
   const [tab, setTab] = useState<"VIDEO" | "QUIZ">("VIDEO");
   const [videos, setVideos] = useState<AcademyVideo[] | null>(null);
@@ -73,17 +75,17 @@ export default function AdminAcademy() {
   }
 
   function confirm(titleText: string, body: string, onYes: () => Promise<unknown>) {
-    Alert.alert(titleText, body, [
-      { text: "Batal", style: "cancel" },
+    Alert.alert(t(titleText), body, [
+      { text: t("Batal"), style: "cancel" },
       {
-        text: "Hapus",
+        text: t("Hapus"),
         style: "destructive",
         onPress: async () => {
           try {
             await onYes();
             await load();
           } catch (err) {
-            Alert.alert("Gagal", friendlyApiError(err));
+            Alert.alert(t("Gagal"), t(friendlyApiError(err)));
           }
         },
       },
@@ -97,8 +99,8 @@ export default function AdminAcademy() {
       <OptionChips
         label="Kelola"
         options={[
-          { value: "VIDEO", label: `Video${videos ? ` (${videos.length})` : ""}` },
-          { value: "QUIZ", label: `Soal kuis${questions ? ` (${questions.length})` : ""}` },
+          { value: "VIDEO", label: `${t("Video")}${videos ? ` (${videos.length})` : ""}` },
+          { value: "QUIZ", label: `${t("Soal kuis")}${questions ? ` (${questions.length})` : ""}` },
         ]}
         value={tab}
         onChange={(v) => { setTab(v); setMsg(null); }}
@@ -138,7 +140,7 @@ export default function AdminAcademy() {
                 <T variant="bodySm" style={{ fontWeight: "700" }} numberOfLines={2}>{v.title}</T>
                 <T variant="caption" color="textMuted" numberOfLines={1}>{v.video_url}</T>
               </View>
-              <Pressable hitSlop={10} onPress={() => confirm("Hapus video", `"${v.title}" akan dihapus.`, () => deleteVideo(v.id))}>
+              <Pressable hitSlop={10} onPress={() => confirm("Hapus video", t('"{title}" akan dihapus.', { title: v.title }), () => deleteVideo(v.id))}>
                 <Ionicons name="trash-outline" size={20} color={colors.error} />
               </Pressable>
             </Card>
@@ -161,7 +163,7 @@ export default function AdminAcademy() {
                   />
                 </Pressable>
                 <Field
-                  label={`Pilihan ${LETTERS[i]}${correct === i ? " (jawaban benar)" : ""}`}
+                  label={`${t("Pilihan {letter}", { letter: LETTERS[i] })}${correct === i ? ` (${t("jawaban benar")})` : ""}`}
                   value={opt}
                   onChangeText={(v) => setOptions((o) => o.map((x, j) => (j === i ? v : x)))}
                   autoCapitalize="sentences"
@@ -198,7 +200,7 @@ export default function AdminAcademy() {
             <Card key={q.id} style={{ gap: 6 }}>
               <View style={styles.item}>
                 <T variant="bodySm" style={{ fontWeight: "700", flex: 1 }}>{qi + 1}. {q.question}</T>
-                <Pressable hitSlop={10} onPress={() => confirm("Hapus soal", "Soal ini akan dihapus.", () => deleteQuizQuestion(q.id))}>
+                <Pressable hitSlop={10} onPress={() => confirm("Hapus soal", t("Soal ini akan dihapus."), () => deleteQuizQuestion(q.id))}>
                   <Ionicons name="trash-outline" size={20} color={colors.error} />
                 </Pressable>
               </View>

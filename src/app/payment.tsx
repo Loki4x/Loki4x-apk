@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useI18n } from "@/lib/i18n";
 import { AppState, Image, Pressable, StyleSheet, View } from "react-native";
 import { Redirect, router, useLocalSearchParams } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
@@ -32,6 +33,7 @@ export default function PaymentScreen() {
   const plan = isPlan(params.plan) ? params.plan : null;
   const { session, refreshProfile } = useAuth();
   const { colors } = useTheme();
+  const { t } = useI18n();
   const [info, setInfo] = useState<UpgradeInfo | null>(null);
   const [step, setStep] = useState<"promo" | "pay" | "done">("promo");
   const [agreed, setAgreed] = useState(false);
@@ -232,7 +234,7 @@ export default function PaymentScreen() {
                   <T variant="bodySm" color="textSecondary">
                     Pembayaran siap. Pilih QRIS atau Virtual Account bank di halaman pembayaran yang aman.
                   </T>
-                  <Button title={`Bayar sekarang — ${formatIdr(order.amount)}`} onPress={() => WebBrowser.openBrowserAsync(order.paymentUrl)} />
+                  <Button title={`${t("Bayar sekarang")} — ${formatIdr(order.amount)}`} onPress={() => WebBrowser.openBrowserAsync(order.paymentUrl)} />
                   <T variant="caption" color="textMuted">Biaya layanan dan biaya metode pembayaran ditambahkan di halaman pembayaran.</T>
                   <T variant="caption" color="textMuted">
                     ⏳ Menunggu pembayaran — layar ini otomatis update begitu pembayaran masuk.
@@ -266,7 +268,7 @@ export default function PaymentScreen() {
                 {wallet && (
                   <>
                     <T variant="caption" color="warning">
-                      Kirim hanya USDT jaringan {wallet.label}. Kirim lewat jaringan lain bisa mengakibatkan dana hilang.
+                      {t("Kirim hanya USDT jaringan {network}. Kirim lewat jaringan lain bisa mengakibatkan dana hilang.", { network: wallet.label })}
                     </T>
                     <View style={[styles.wallet, { backgroundColor: colors.surface2, borderColor: colors.border }]}>
                       <View style={{ flex: 1, gap: 2 }}>

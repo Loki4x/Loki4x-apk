@@ -7,6 +7,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ThemeProvider, useTheme } from "@/lib/theme";
 import { AuthProvider } from "@/lib/auth";
 import { routeForUrl } from "@/lib/push";
+import { loadSavedLocale } from "@/lib/i18n";
 
 /** Notifikasi ditekan -> buka layar yang sesuai (juga saat aplikasi dibuka dari notifikasi). */
 function useNotificationRouting() {
@@ -44,6 +45,9 @@ function RootStack() {
 }
 
 export default function RootLayout() {
+  useEffect(() => {
+    loadSavedLocale();
+  }, []);
   return (
     <SafeAreaProvider>
       <ThemeProvider>
