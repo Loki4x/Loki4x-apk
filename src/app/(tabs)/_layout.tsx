@@ -9,7 +9,7 @@ import { useI18n } from "@/lib/i18n";
 type IconName = keyof typeof Ionicons.glyphMap;
 
 const TABS: { name: string; title: string; icon: IconName }[] = [
-  { name: "index", title: "Dashboard", icon: "grid-outline" },
+  { name: "index", title: "Beranda", icon: "home-outline" },
   { name: "signals", title: "Sinyal", icon: "pulse-outline" },
   { name: "journal", title: "Journal", icon: "book-outline" },
   { name: "academy", title: "Akademi", icon: "school-outline" },

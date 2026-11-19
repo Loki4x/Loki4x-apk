@@ -699,4 +699,5 @@ export const EN: Record<string, string> = {
   "Data tidak valid. Periksa email dan isianmu.": "Invalid details. Please check your email and fields.",
   "Pendaftaran gagal. Periksa datamu, atau coba lagi nanti.": "Sign-up failed. Check your details or try again later.",
   "Terjadi kesalahan. Coba lagi.": "Something went wrong. Please try again.",
+  "Beranda": "Home",
 };
