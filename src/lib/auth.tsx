@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { Platform } from "react-native";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import { isPushPreferred, registerForPush, unregisterPush } from "@/lib/push";
@@ -76,6 +77,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       else loadProfile(next.user.id, next.user.email).then(setProfile);
       // Baru login: minta izin notifikasi & daftarkan HP ini (kecuali user pernah mematikannya).
       if (event === "SIGNED_IN" && next) {
+        // Catat login di riwayat aktivitas (tampil di Pengaturan → Keamanan di web), sama seperti login web.
+        supabase
+          .from("login_activity")
+          .insert({ user_id: next.user.id, ip: null, user_agent: `Loki4x App (${Platform.OS === "ios" ? "iPhone" : "Android"})` })
+          .then(() => {}, () => {});
         isPushPreferred().then((on) => {
           if (on) registerForPush(true);
         });

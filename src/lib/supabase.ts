@@ -46,6 +46,8 @@ export const supabase = createClient(SUPABASE_URL || "https://invalid.supabase.c
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
+    // PKCE: login Google lewat browser kembali ke aplikasi dengan ?code=..., lalu ditukar jadi sesi.
+    flowType: "pkce",
   },
 });
 

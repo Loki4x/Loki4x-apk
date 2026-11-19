@@ -53,6 +53,17 @@ Push memakai Firebase Cloud Messaging. Tanpa langkah ini APK tetap jalan, hanya 
 Setelah itu semua notifikasi web (sinyal baru & update, pengingat news, batas risiko, pengumuman admin)
 juga terkirim ke aplikasi.
 
+### Login Google (sekali saja)
+
+Aplikasi memakai provider Google yang sama dengan web (Supabase Auth), lewat browser aman lalu kembali ke
+aplikasi. Supabase → **Authentication → URL Configuration → Redirect URLs** → tambahkan:
+
+```
+loki4x://auth-callback
+```
+
+Tidak perlu mengubah apa pun di Google Cloud Console.
+
 ## Pengembangan
 
 ```bash

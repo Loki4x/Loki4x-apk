@@ -666,4 +666,8 @@ export const EN: Record<string, string> = {
   "Tools & Analisa": "Tools & Analysis",
   "Fitur ini khusus member Membership.": "This feature is for Membership members.",
   "Fitur ini khusus member VIP.": "This feature is for VIP members.",
+  "Membuka Google…": "Opening Google…",
+  "Masuk dengan Google": "Sign in with Google",
+  "Menyelesaikan login Google…": "Finishing Google sign-in…",
+  "Login Google belum diaktifkan untuk aplikasi. Hubungi admin.": "Google sign-in is not enabled for the app yet. Contact an admin.",
 };
