@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { Redirect, router, useFocusEffect } from "expo-router";
-import { Button, Screen, T } from "@/components/ui";
+import { Button, Screen, SkeletonPage, T } from "@/components/ui";
 import { BackHeader, OptionChips } from "@/components/form";
 import { SignalCard } from "@/components/SignalCard";
 import { useAuth } from "@/lib/auth";
@@ -57,7 +57,7 @@ export default function AdminSignals() {
         onChange={setFilter}
       />
       {error && <T variant="bodySm" color="error">{error}</T>}
-      {!signals && !error && <T variant="bodySm" color="textMuted">Memuat…</T>}
+      {!signals && !error && <SkeletonPage variant="list" />}
       {signals && shown.length === 0 && <T variant="bodySm" color="textMuted">Tidak ada sinyal.</T>}
       {shown.map((s) => (
         <SignalCard key={s.id} signal={s} onPress={() => router.push(`/admin/signal/${s.id}`)} />

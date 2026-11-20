@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { router, useFocusEffect } from "expo-router";
-import { Button, Card, Screen, T } from "@/components/ui";
+import { Button, Card, Screen, SkeletonPage, T } from "@/components/ui";
 import { SignalCard } from "@/components/SignalCard";
 import { hasAccess, useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -134,7 +134,7 @@ export default function SignalsScreen() {
       {error ? (
         <T variant="bodySm" color="error">{error}</T>
       ) : signals === null ? (
-        <T variant="bodySm" color="textMuted">Memuat sinyal…</T>
+        <SkeletonPage variant="kpi" />
       ) : list.length === 0 ? (
         <Card style={{ alignItems: "center", paddingVertical: 24 }}>
           <T variant="bodySm" color="textMuted">

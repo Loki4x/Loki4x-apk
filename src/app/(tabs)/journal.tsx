@@ -2,7 +2,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Badge, Button, Card, Screen, T } from "@/components/ui";
+import { Badge, Button, Card, Screen, SkeletonPage, T } from "@/components/ui";
 import { DisciplineCard } from "@/components/DisciplineCard";
 import { hasAccess, useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -189,7 +189,7 @@ export default function JournalScreen() {
         </ScrollView>
       )}
 
-      {account && !view && <T variant="bodySm" color="textMuted">Memuat jurnal…</T>}
+      {(!accounts || (account && !view)) && !error && <SkeletonPage variant="kpi" />}
 
       {account && view && (
         <>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Switch, View } from "react-native";
 import { Redirect } from "expo-router";
-import { Button, Card, Screen, T } from "@/components/ui";
+import { Button, Card, Screen, SkeletonPage, T } from "@/components/ui";
 import { BackHeader, Field } from "@/components/form";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -137,7 +137,7 @@ export default function SettingsScreen() {
   return (
     <Screen>
       <BackHeader title="Pengaturan" fallback="/account" />
-      {!loaded && <T variant="bodySm" color="textMuted">Memuat…</T>}
+      {!loaded && <SkeletonPage variant="kpi" />}
 
       {loaded && (
         <>

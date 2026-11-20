@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { Redirect, useFocusEffect } from "expo-router";
-import { Badge, Card, Screen, T } from "@/components/ui";
+import { Badge, Card, Screen, SkeletonPage, T } from "@/components/ui";
 import { BackHeader, OptionChips } from "@/components/form";
 import { Locked } from "@/components/Locked";
 import { hasAccess, useAuth } from "@/lib/auth";
@@ -77,7 +77,7 @@ export default function PositioningScreen() {
         Sentimen retail (long vs short) — dibaca kontrarian. Mayoritas long dibaca bearish, mayoritas short dibaca bullish.
       </T>
       {error && <T variant="bodySm" color="error">{error}</T>}
-      {!items && !error && <T variant="bodySm" color="textMuted">Memuat…</T>}
+      {!items && !error && <SkeletonPage variant="list" count={4} />}
       {items && items.length === 0 && <T variant="bodySm" color="textMuted">Belum ada data positioning.</T>}
 
       {items && items.length > 0 && (

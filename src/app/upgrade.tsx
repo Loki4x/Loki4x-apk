@@ -4,7 +4,7 @@ import { Linking, Pressable, StyleSheet, View } from "react-native";
 import { Redirect, router, useFocusEffect } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { Ionicons } from "@expo/vector-icons";
-import { Badge, Button, Card, Screen, T } from "@/components/ui";
+import { Badge, Button, Card, Screen, SkeletonPage, T } from "@/components/ui";
 import { BackHeader, Field, TermsCheckbox } from "@/components/form";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -90,7 +90,7 @@ export default function UpgradeScreen() {
     >
       <BackHeader title="Upgrade & Perpanjangan" fallback="/account" />
       {error && <T variant="bodySm" color="error">{error}</T>}
-      {!info && !error && <T variant="bodySm" color="textMuted">Memuat…</T>}
+      {!info && !error && <SkeletonPage variant="list" />}
 
       {info && status && (
         <>

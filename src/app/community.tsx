@@ -3,9 +3,10 @@ import { ActionSheetIOS, Alert, FlatList, KeyboardAvoidingView, Platform, Pressa
 import { Redirect, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { Badge, T } from "@/components/ui";
+import { Badge, SkeletonPage, T } from "@/components/ui";
 import { BackHeader } from "@/components/form";
 import { ChatComposer } from "@/components/ChatComposer";
+import { GlassBackground } from "@/components/GlassBackground";
 import { AuthImage, communityImagePath } from "@/components/AuthImage";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -176,6 +177,7 @@ export default function CommunityScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top", "left", "right", "bottom"]}>
+      <GlassBackground />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <View style={{ paddingHorizontal: 16, paddingTop: 16, gap: 10 }}>
           <BackHeader title="Komunitas" />
@@ -214,9 +216,15 @@ export default function CommunityScreen() {
             </T>
           </View>
         ) : messages === null ? (
-          <View style={styles.center}>
-            <T variant="bodySm" color="textMuted">{error ?? "Memuat…"}</T>
-          </View>
+          error ? (
+            <View style={styles.center}>
+              <T variant="bodySm" color="textMuted">{error}</T>
+            </View>
+          ) : (
+            <View style={{ padding: 16 }}>
+              <SkeletonPage variant="list" count={4} />
+            </View>
+          )
         ) : (
           <FlatList
             ref={listRef}

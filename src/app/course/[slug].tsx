@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { Image, Pressable, StyleSheet, View } from "react-native";
 import { Redirect, router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Badge, Button, Card, ProgressBar, Screen, T } from "@/components/ui";
+import { Badge, Button, Card, ProgressBar, Screen, SkeletonPage, T } from "@/components/ui";
 import { BackHeader } from "@/components/form";
 import { hasAccess, useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -98,7 +98,7 @@ export default function CourseScreen() {
         </Card>
       )}
 
-      {!videos && !error && <T variant="bodySm" color="textMuted">Memuat…</T>}
+      {!videos && !error && <SkeletonPage variant="list" />}
       {videos && videos.length === 0 && (
         <Card>
           <T variant="bodySm" color="textSecondary">Belum ada video di kategori ini.</T>

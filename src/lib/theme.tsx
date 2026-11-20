@@ -39,22 +39,49 @@ const accents = {
   secondary: "#06B6D4",
 };
 
+// Gaya glassmorphism: kartu & permukaan jadi kaca transparan di atas latar gradasi (lihat GlassBackground).
+const darkGlass: typeof dark = {
+  ...dark,
+  surface: "rgba(22, 30, 50, 0.55)",
+  surface2: "rgba(255, 255, 255, 0.06)",
+  surfaceHover: "rgba(255, 255, 255, 0.10)",
+  border: "rgba(255, 255, 255, 0.10)",
+  borderStrong: "rgba(255, 255, 255, 0.18)",
+};
+
+const lightGlass: typeof dark = {
+  ...light,
+  background: "#EEF2FA",
+  surface: "rgba(255, 255, 255, 0.62)",
+  surface2: "rgba(255, 255, 255, 0.55)",
+  surfaceHover: "rgba(255, 255, 255, 0.75)",
+  border: "rgba(255, 255, 255, 0.90)",
+  borderStrong: "rgba(199, 206, 218, 0.9)",
+};
+
 export type ThemeColors = typeof dark & typeof accents;
 export type ThemeMode = "system" | "dark" | "light";
+/** normal = tampilan solid seperti web; glass = glassmorphism. */
+export type ThemeStyle = "normal" | "glass";
 
 interface ThemeContextValue {
   colors: ThemeColors;
   isDark: boolean;
   mode: ThemeMode;
   setMode: (mode: ThemeMode) => void;
+  style: ThemeStyle;
+  glass: boolean;
+  setStyle: (style: ThemeStyle) => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 const STORAGE_KEY = "loki4x-theme";
+const STYLE_KEY = "loki4x-theme-style";
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const system = useColorScheme();
   const [mode, setModeState] = useState<ThemeMode>("system");
+  const [style, setStyleState] = useState<ThemeStyle>("normal");
 
   useEffect(() => {
     SecureStore.getItemAsync(STORAGE_KEY)
@@ -62,21 +89,34 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         if (v === "dark" || v === "light" || v === "system") setModeState(v);
       })
       .catch(() => {});
+    SecureStore.getItemAsync(STYLE_KEY)
+      .then((v) => {
+        if (v === "normal" || v === "glass") setStyleState(v);
+      })
+      .catch(() => {});
   }, []);
 
   const value = useMemo<ThemeContextValue>(() => {
     // Default web = gelap, jadi kalau sistem tidak memberi info, pakai gelap.
     const isDark = mode === "system" ? system !== "light" : mode === "dark";
+    const glass = style === "glass";
+    const base = glass ? (isDark ? darkGlass : lightGlass) : isDark ? dark : light;
     return {
-      colors: { ...(isDark ? dark : light), ...accents },
+      colors: { ...base, ...accents },
       isDark,
       mode,
       setMode: (m) => {
         setModeState(m);
         SecureStore.setItemAsync(STORAGE_KEY, m).catch(() => {});
       },
+      style,
+      glass,
+      setStyle: (st) => {
+        setStyleState(st);
+        SecureStore.setItemAsync(STYLE_KEY, st).catch(() => {});
+      },
     };
-  }, [mode, system]);
+  }, [mode, system, style]);
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }

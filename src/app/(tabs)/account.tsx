@@ -6,7 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Badge, Button, Card, Screen, T } from "@/components/ui";
 import { NotificationSettingCard } from "@/components/NotificationSettingCard";
 import { useAuth, type Tier } from "@/lib/auth";
-import { useTheme, type ThemeMode } from "@/lib/theme";
+import { useTheme, type ThemeMode, type ThemeStyle } from "@/lib/theme";
 import { WEB_URL } from "@/lib/config";
 import { formatDate } from "@/lib/format";
 
@@ -15,6 +15,11 @@ const THEME_OPTIONS: { mode: ThemeMode; label: string; icon: keyof typeof Ionico
   { mode: "system", label: "Ikuti HP", icon: "phone-portrait-outline" },
   { mode: "dark", label: "Gelap", icon: "moon-outline" },
   { mode: "light", label: "Terang", icon: "sunny-outline" },
+];
+
+const STYLE_OPTIONS: { style: ThemeStyle; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+  { style: "normal", label: "Normal", icon: "square-outline" },
+  { style: "glass", label: "Glassmorphism", icon: "sparkles-outline" },
 ];
 
 const LANGS: { locale: Locale; label: string; flag: string }[] = [
@@ -33,7 +38,7 @@ const LINKS: { label: string; path: string; icon: keyof typeof Ionicons.glyphMap
 
 export default function AccountScreen() {
   const { profile, session, signOut } = useAuth();
-  const { colors, mode, setMode } = useTheme();
+  const { colors, mode, setMode, style, setStyle } = useTheme();
   const { t, locale, setLocale } = useI18n();
   const tier = profile?.effectiveTier ?? "FREE";
 
@@ -99,6 +104,29 @@ export default function AccountScreen() {
             );
           })}
         </View>
+      </Card>
+
+      <Card>
+        <T variant="label" color="textMuted">Gaya tampilan</T>
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          {STYLE_OPTIONS.map((o) => {
+            const active = style === o.style;
+            return (
+              <Pressable
+                key={o.style}
+                onPress={() => setStyle(o.style)}
+                style={[
+                  styles.themeOption,
+                  { borderColor: active ? colors.primary : colors.border, backgroundColor: active ? colors.primarySubtle : colors.surface2 },
+                ]}
+              >
+                <Ionicons name={o.icon} size={18} color={active ? colors.primary : colors.textSecondary} />
+                <T variant="caption" style={{ color: active ? colors.primary : colors.textSecondary, fontWeight: "600" }}>{o.label}</T>
+              </Pressable>
+            );
+          })}
+        </View>
+        <T variant="caption" color="textMuted">Glassmorphism: kartu kaca transparan di atas latar gradasi.</T>
       </Card>
 
       <Card>

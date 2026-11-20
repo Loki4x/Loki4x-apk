@@ -5,6 +5,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { useI18n } from "@/lib/i18n";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { FloatingTabBar, TAB_BAR_GAP, TAB_BAR_HEIGHT } from "@/components/FloatingTabBar";
+import { TabInsetContext } from "@/components/ui";
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -16,7 +19,10 @@ const TABS: { name: string; title: string; icon: IconName }[] = [
   { name: "account", title: "Akun", icon: "person-circle-outline" },
 ];
 
+const ICONS: Record<string, IconName> = Object.fromEntries(TABS.map((t) => [t.name, t.icon]));
+
 export default function TabsLayout() {
+  const insets = useSafeAreaInsets();
   const { session, loading } = useAuth();
   const { colors } = useTheme();
   const { t } = useI18n();
@@ -31,13 +37,11 @@ export default function TabsLayout() {
   if (!session) return <Redirect href="/login" />;
 
   return (
+    <TabInsetContext.Provider value={TAB_BAR_HEIGHT + TAB_BAR_GAP + insets.bottom + 24}>
     <Tabs
+      tabBar={(props) => <FloatingTabBar {...props} icons={ICONS} />}
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textMuted,
-        tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: "600" },
         sceneStyle: { backgroundColor: colors.background },
       }}
     >
@@ -47,10 +51,10 @@ export default function TabsLayout() {
           name={tab.name}
           options={{
             title: t(tab.title),
-            tabBarIcon: ({ color, size }) => <Ionicons name={tab.icon} color={String(color)} size={size} />,
           }}
         />
       ))}
     </Tabs>
+    </TabInsetContext.Provider>
   );
 }

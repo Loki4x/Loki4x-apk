@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { Share, StyleSheet, View } from "react-native";
 import { Redirect, useFocusEffect } from "expo-router";
 import * as Clipboard from "expo-clipboard";
-import { Button, Card, ProgressBar, Screen, T } from "@/components/ui";
+import { Button, Card, ProgressBar, Screen, SkeletonPage, T } from "@/components/ui";
 import { BackHeader } from "@/components/form";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -89,7 +89,7 @@ export default function ReferralScreen() {
         </T>
       )}
       {error && <T variant="bodySm" color="error">{error}</T>}
-      {!info && !error && <T variant="bodySm" color="textMuted">Memuat…</T>}
+      {!info && !error && <SkeletonPage variant="kpi" />}
 
       {info && (
         <>

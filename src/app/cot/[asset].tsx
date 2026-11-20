@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { Redirect, useLocalSearchParams } from "expo-router";
-import { Card, Screen, T } from "@/components/ui";
+import { Card, Screen, SkeletonPage, T } from "@/components/ui";
 import { BackHeader } from "@/components/form";
 import { hasAccess, useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -39,7 +39,7 @@ export default function CotHistoryScreen() {
     <Screen>
       <BackHeader title={`COT · ${label}`} fallback="/cot" />
       {error && <T variant="bodySm" color="error">{error}</T>}
-      {!points && !error && <T variant="bodySm" color="textMuted">Memuat…</T>}
+      {!points && !error && <SkeletonPage variant="kpi" />}
       {points && points.length === 0 && <T variant="bodySm" color="textMuted">Data histori belum tersedia.</T>}
 
       {latest && (
