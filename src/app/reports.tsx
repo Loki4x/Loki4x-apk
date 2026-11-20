@@ -4,7 +4,7 @@ import { Redirect, useFocusEffect, useLocalSearchParams } from "expo-router";
 import * as Sharing from "expo-sharing";
 import { File, Paths } from "expo-file-system";
 import { Ionicons } from "@expo/vector-icons";
-import { Button, Card, ProgressBar, Screen, T } from "@/components/ui";
+import { Button, Card, ProgressBar, Screen, SkeletonPage, T } from "@/components/ui";
 import { BackHeader } from "@/components/form";
 import { hasAccess, useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -169,7 +169,7 @@ export default function ReportsScreen() {
         {account ? ` · ${account.name}` : ""}
       </T>
       {error && <T variant="bodySm" color="error">{error}</T>}
-      {!view && !error && <T variant="bodySm" color="textMuted">Memuat…</T>}
+      {!view && !error && <SkeletonPage variant="kpi" />}
 
       {view && (
         <>

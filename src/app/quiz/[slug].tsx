@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Alert, Pressable, StyleSheet, View } from "react-native";
 import { Redirect, router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Button, Card, ProgressBar, Screen, T } from "@/components/ui";
+import { Button, Card, ProgressBar, Screen, SkeletonPage, T } from "@/components/ui";
 import { BackHeader } from "@/components/form";
 import { hasAccess, useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -143,7 +143,7 @@ export default function QuizScreen() {
     <Screen>
       <BackHeader title={t("Kuis {title}", { title: t(meta.title) })} fallback={`/course/${slug}`} />
 
-      {questions === null && <T variant="bodySm" color="textMuted">Memuat soal…</T>}
+      {questions === null && <SkeletonPage variant="detail" />}
       {error && <T variant="bodySm" color="error">{error}</T>}
       {questions && questions.length === 0 && !error && (
         <Card>

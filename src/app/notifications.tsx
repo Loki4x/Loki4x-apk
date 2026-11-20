@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
 import { Redirect, router, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Card, Screen, T } from "@/components/ui";
+import { Card, Screen, SkeletonPage, T } from "@/components/ui";
 import { BackHeader } from "@/components/form";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -92,7 +92,7 @@ export default function NotificationsScreen() {
         </T>
       )}
       {error && <T variant="bodySm" color="error">{error}</T>}
-      {!items && !error && <T variant="bodySm" color="textMuted">Memuat…</T>}
+      {!items && !error && <SkeletonPage variant="list" count={5} />}
       {items && items.length === 0 && (
         <Card style={{ alignItems: "center", paddingVertical: 28 }}>
           <Ionicons name="notifications-off-outline" size={36} color={colors.textMuted} />

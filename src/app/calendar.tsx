@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { Redirect, useFocusEffect } from "expo-router";
-import { Card, Screen, T } from "@/components/ui";
+import { Card, Screen, SkeletonPage, T } from "@/components/ui";
 import { BackHeader, OptionChips } from "@/components/form";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -87,7 +87,7 @@ export default function CalendarScreen() {
         {showPast ? "Sembunyikan hari yang sudah lewat" : "Tampilkan hari yang sudah lewat"}
       </T>
       {error && <T variant="bodySm" color="error">{error}</T>}
-      {!events && !error && <T variant="bodySm" color="textMuted">Memuat…</T>}
+      {!events && !error && <SkeletonPage variant="list" />}
       {events && days.length === 0 && <T variant="bodySm" color="textMuted">Tidak ada event untuk filter ini.</T>}
 
       {days.map(([day, list]) => (

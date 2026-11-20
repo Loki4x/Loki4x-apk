@@ -2,7 +2,7 @@ import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Badge, Button, Card, Screen, T } from "@/components/ui";
+import { Badge, Button, Card, Screen, Skeleton, T } from "@/components/ui";
 import { MarketSessionsCard } from "@/components/MarketSessionsCard";
 import { ToolsGrid } from "@/components/ToolsGrid";
 import { unreadCount } from "@/lib/notifications";
@@ -155,7 +155,11 @@ export default function DashboardScreen() {
             {summary && <T variant="caption" color="textMuted">{summary.accountName}</T>}
           </View>
           {summary === undefined ? (
-            <T variant="bodySm" color="textMuted">Memuat…</T>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+              {[0, 1, 2, 3].map((i) => (
+                <Skeleton key={i} height={54} width="47%" style={{ flexGrow: 1 }} radius={12} />
+              ))}
+            </View>
           ) : summary === null ? (
             <T variant="bodySm" color="textMuted">
               Belum ada akun journaling. Buat dulu di tab Journal.
@@ -189,7 +193,11 @@ export default function DashboardScreen() {
           {newsError ? (
             <T variant="bodySm" color="textMuted">{newsError}</T>
           ) : news === null ? (
-            <T variant="bodySm" color="textMuted">Memuat…</T>
+            <View style={{ gap: 10 }}>
+              {[0, 1, 2].map((i) => (
+                <Skeleton key={i} height={38} radius={10} />
+              ))}
+            </View>
           ) : news.length === 0 ? (
             <T variant="bodySm" color="textMuted">Tidak ada news high impact dalam 7 hari ke depan.</T>
           ) : (

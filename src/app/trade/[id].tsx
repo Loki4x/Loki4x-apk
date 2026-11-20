@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Alert, Image, Pressable, StyleSheet, View } from "react-native";
 import { Redirect, router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Button, Card, Screen, T } from "@/components/ui";
+import { Button, Card, Screen, SkeletonPage, T } from "@/components/ui";
 import { BackHeader, Field, normalizeNumber, OptionChips } from "@/components/form";
 import { hasAccess, useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -196,7 +196,7 @@ export default function TradeFormScreen() {
       <BackHeader title={isNew ? "Tambah Trade" : "Edit Trade"} fallback="/journal" />
 
       {loading ? (
-        <T variant="bodySm" color="textMuted">Memuat…</T>
+        <SkeletonPage variant="detail" />
       ) : (
         <>
           <Card style={{ gap: 14 }}>

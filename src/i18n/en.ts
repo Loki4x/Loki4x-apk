@@ -700,4 +700,8 @@ export const EN: Record<string, string> = {
   "Pendaftaran gagal. Periksa datamu, atau coba lagi nanti.": "Sign-up failed. Check your details or try again later.",
   "Terjadi kesalahan. Coba lagi.": "Something went wrong. Please try again.",
   "Beranda": "Home",
+  "Gaya tampilan": "Display style",
+  "Normal": "Normal",
+  "Glassmorphism": "Glassmorphism",
+  "Glassmorphism: kartu kaca transparan di atas latar gradasi.": "Glassmorphism: translucent glass cards over a gradient background.",
 };

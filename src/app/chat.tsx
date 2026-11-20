@@ -3,9 +3,10 @@ import { FlatList, KeyboardAvoidingView, Linking, Platform, StyleSheet, View } f
 import { Redirect } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { T } from "@/components/ui";
+import { SkeletonPage, T } from "@/components/ui";
 import { BackHeader } from "@/components/form";
 import { ChatComposer } from "@/components/ChatComposer";
+import { GlassBackground } from "@/components/GlassBackground";
 import { AuthImage, chatImagePath } from "@/components/AuthImage";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -87,6 +88,7 @@ export default function SupportChatScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top", "left", "right", "bottom"]}>
+      <GlassBackground />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <View style={{ paddingHorizontal: 16, paddingTop: 16, gap: 6 }}>
           <BackHeader title="Chat Admin" />
@@ -99,8 +101,8 @@ export default function SupportChatScreen() {
           </T>
         </View>
         {messages === null ? (
-          <View style={styles.center}>
-            <T variant="bodySm" color="textMuted">Memuat…</T>
+          <View style={{ padding: 16 }}>
+            <SkeletonPage variant="list" count={4} />
           </View>
         ) : (
           <FlatList
