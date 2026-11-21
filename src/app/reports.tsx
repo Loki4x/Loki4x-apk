@@ -344,7 +344,7 @@ function ReportsSkeleton() {
 
 const styles = StyleSheet.create({
   kpis: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
-  kpi: { flexBasis: "45%", flexGrow: 1, gap: 2 },
+  kpi: { width: "45%", flexGrow: 1, gap: 2 },
   between: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
   week: { flexDirection: "row", gap: 4 },
   dayHead: { flex: 1, textAlign: "center" },

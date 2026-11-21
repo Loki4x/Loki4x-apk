@@ -21,8 +21,10 @@ export function EquityChart({ data, currency }: { data: { date: string; balance:
   const color = up ? colors.success : colors.error;
 
   const pad = 6;
-  const pts = values.map((v, i) => {
-    const x = values.length === 1 ? width / 2 : (i / (values.length - 1)) * width;
+  // Satu titik saja (belum ada trade tertutup): gambar garis datar selebar grafik.
+  const series = values.length === 1 ? [values[0], values[0]] : values;
+  const pts = series.map((v, i) => {
+    const x = (i / (series.length - 1)) * width;
     const y = pad + (1 - (v - min) / span) * (HEIGHT - pad * 2);
     return [x, y] as const;
   });

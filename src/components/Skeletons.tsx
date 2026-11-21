@@ -296,3 +296,68 @@ export function FormSkeleton({ fields = 5 }: { fields?: number }) {
     </SkCard>
   );
 }
+
+/** Kartu Jam Sesi Pasar: judul + jam, status, 4 baris sesi (nama, jam, badge, track, keterangan). */
+export function MarketSessionsSkeleton() {
+  return (
+    <SkCard>
+      <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
+        <View style={{ flex: 1 }}>
+          <SkText variant="body" width="45%" />
+          <SkText variant="caption" width="60%" />
+        </View>
+        <SkText variant="h3" width={60} />
+      </View>
+      <Skeleton height={36} radius={10} />
+      {range(4).map((i) => (
+        <View key={i} style={{ gap: 4 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <SkText variant="bodySm" width="25%" />
+            <View style={{ flex: 1 }} />
+            <SkText variant="caption" width={80} />
+            <Skeleton height={20} width={50} radius={999} />
+          </View>
+          <Skeleton height={8} radius={99} />
+          <SkText variant="caption" width="22%" />
+        </View>
+      ))}
+    </SkCard>
+  );
+}
+
+/** Kartu Tools & Analisa: label + grid 4 kolom. */
+export function ToolsGridSkeleton({ count = 8 }: { count?: number }) {
+  const { colors } = useTheme();
+  return (
+    <SkCard>
+      <SkText variant="label" width="30%" />
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+        {range(count).map((i) => (
+          <View key={i} style={{ width: "23%", flexGrow: 1, alignItems: "center", gap: 6, borderRadius: 14, paddingVertical: 12, paddingHorizontal: 4, backgroundColor: colors.surface2 }}>
+            <Skeleton height={22} width={22} radius={6} />
+            <SkText variant="caption" width="70%" />
+          </View>
+        ))}
+      </View>
+    </SkCard>
+  );
+}
+
+/** Kartu pilihan (Tampilan / Gaya / Bahasa): label + deretan tombol pilihan. */
+export function OptionCardSkeleton({ options = 3, caption }: { options?: number; caption?: boolean }) {
+  const { colors } = useTheme();
+  return (
+    <SkCard>
+      <SkText variant="label" width="25%" />
+      <View style={{ flexDirection: "row", gap: 8 }}>
+        {range(options).map((i) => (
+          <View key={i} style={{ flex: 1, alignItems: "center", gap: 4, borderWidth: 1, borderColor: colors.border, borderRadius: 12, paddingVertical: 10 }}>
+            <Skeleton height={18} width={18} radius={5} />
+            <SkText variant="caption" width="45%" />
+          </View>
+        ))}
+      </View>
+      {caption && <SkText variant="caption" width="65%" />}
+    </SkCard>
+  );
+}

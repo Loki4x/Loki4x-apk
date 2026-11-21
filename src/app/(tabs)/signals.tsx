@@ -163,5 +163,5 @@ const styles = StyleSheet.create({
   segmented: { flexDirection: "row", borderRadius: 12, padding: 4, gap: 4 },
   segment: { flex: 1, alignItems: "center", paddingVertical: 8, borderRadius: 9, borderWidth: 1, borderColor: "transparent" },
   stats: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
-  stat: { flexBasis: "45%", flexGrow: 1, gap: 2 },
+  stat: { width: "45%", flexGrow: 1, gap: 2 },
 });

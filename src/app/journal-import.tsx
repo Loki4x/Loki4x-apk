@@ -180,6 +180,6 @@ export default function JournalImportScreen() {
 const styles = StyleSheet.create({
   error: { borderRadius: 10, padding: 10 },
   stats: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
-  stat: { flexBasis: "45%", flexGrow: 1, gap: 2 },
+  stat: { width: "45%", flexGrow: 1, gap: 2 },
   row: { flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 9 },
 });

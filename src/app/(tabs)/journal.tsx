@@ -486,7 +486,7 @@ const styles = StyleSheet.create({
   chip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 7 },
   manage: { flexDirection: "row", alignItems: "center", gap: 5, borderStyle: "dashed" },
   kpis: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
-  kpi: { flexBasis: "29%", flexGrow: 1, gap: 2 },
+  kpi: { width: "29%", flexGrow: 1, gap: 2 },
   groupRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   histHead: { flexDirection: "row", alignItems: "center", gap: 8 },
   filterBtn: { flexDirection: "row", alignItems: "center", gap: 4 },
