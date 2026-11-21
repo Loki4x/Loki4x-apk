@@ -214,11 +214,12 @@ export interface VipRequest {
   broker?: string | null;
   first_deposit: number;
   status: "PENDING" | "APPROVED" | "REJECTED";
+  rejection_reason?: string | null;
   created_at: string;
   profiles: { full_name: string | null; email: string | null } | null;
 }
-export const reviewVipRequest = (id: string, action: "approve" | "reject") =>
-  apiRequest<{ ok: true }>("POST", `/api/mobile/admin/vip-requests/${id}`, { action });
+export const reviewVipRequest = (id: string, action: "approve" | "reject", reason = "") =>
+  apiRequest<{ ok: true }>("POST", `/api/mobile/admin/vip-requests/${id}`, { action, reason });
 
 export interface UsdtPayment {
   id: string;
@@ -229,14 +230,15 @@ export interface UsdtPayment {
   status: "PENDING" | "COMPLETED" | "FAILED";
   slip_url: string | null;
   note: string | null;
+  rejection_reason?: string | null;
   payment_method: string | null;
   promo_code?: string | null;
   discount_amount?: number | null;
   created_at: string;
   profiles: { full_name: string | null; email: string | null } | null;
 }
-export const reviewUsdtPayment = (id: string, action: "approve" | "reject") =>
-  apiRequest<{ ok: true }>("POST", `/api/mobile/admin/usdt-payments/${id}`, { action });
+export const reviewUsdtPayment = (id: string, action: "approve" | "reject", reason = "") =>
+  apiRequest<{ ok: true }>("POST", `/api/mobile/admin/usdt-payments/${id}`, { action, reason });
 /** Bukti transfer privat ("r2private:<kunci>") dibuka lewat endpoint admin dengan token login. */
 export const slipPath = (url: string) =>
   url.startsWith("r2private:") ? `/api/admin/slip?key=${encodeURIComponent(url.slice("r2private:".length))}` : null;

@@ -200,7 +200,10 @@ export default function UpgradeScreen() {
                     />
                   )}
                   {info.vipRequest?.status === "REJECTED" && (
-                    <T variant="bodySm" color="error">Pengajuan sebelumnya ditolak. Silakan cek kembali data akunmu dan ajukan ulang.</T>
+                    <T variant="bodySm" color="error">
+                      {t("Pengajuan sebelumnya ditolak. Silakan cek kembali data akunmu dan ajukan ulang.")}
+                      {info.vipRequest.rejection_reason ? `\n${t("Alasan:")} ${info.vipRequest.rejection_reason}` : ""}
+                    </T>
                   )}
                   <Field label="Email yang terdaftar di broker" value={email} onChangeText={setEmail} keyboardType="email-address" placeholder="you@example.com" />
                   <Field label="ID Account Trading" value={accountId} onChangeText={setAccountId} placeholder="12345678" />

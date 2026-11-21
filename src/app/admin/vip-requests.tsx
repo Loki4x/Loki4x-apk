@@ -24,11 +24,11 @@ export default function AdminVipRequestsScreen() {
 
   const shown = (data ?? []).filter((r) => filter === "ALL" || r.status === "PENDING");
 
-  async function review(id: string, action: "approve" | "reject") {
+  async function review(id: string, action: "approve" | "reject", reason: string) {
     setBusy(id);
     setMsg(null);
     try {
-      await reviewVipRequest(id, action);
+      await reviewVipRequest(id, action, reason);
       await load();
     } catch (e) {
       setMsg(friendlyApiError(e));
@@ -59,7 +59,8 @@ export default function AdminVipRequestsScreen() {
           <T variant="caption" color="textSecondary">Deposit pertama: ${r.first_deposit}</T>
           <T variant="caption" color="textMuted">{formatDateTimeWib(r.created_at)} WIB</T>
           <Badge label={r.status} tone={STATUS_TONE[r.status]} />
-          {r.status === "PENDING" && <ReviewButtons busy={busy === r.id} onReview={(a) => review(r.id, a)} />}
+          {r.status === "REJECTED" && r.rejection_reason ? <T variant="caption" color="textMuted">Alasan: {r.rejection_reason}</T> : null}
+          {r.status === "PENDING" && <ReviewButtons busy={busy === r.id} rejectTitle="Tolak pengajuan VIP" onReview={(a, why) => review(r.id, a, why)} />}
         </Card>
       ))}
     </Screen>
