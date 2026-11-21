@@ -3,7 +3,7 @@
     "name": "Loki4x Academy",
     "slug": "loki4x-academy",
     "scheme": "loki4x",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -15,7 +15,10 @@
         "backgroundColor": "#050810",
         "foregroundImage": "./assets/adaptive-icon.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "REQUEST_INSTALL_PACKAGES"
+      ]
     },
     "ios": {
       "bundleIdentifier": "id.web.loki4xacademy.app",

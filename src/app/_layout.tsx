@@ -8,6 +8,7 @@ import { ThemeProvider, useTheme } from "@/lib/theme";
 import { AuthProvider } from "@/lib/auth";
 import { routeForUrl } from "@/lib/push";
 import { loadSavedLocale } from "@/lib/i18n";
+import { UpdateBanner } from "@/components/UpdateBanner";
 
 /** Notifikasi ditekan -> buka layar yang sesuai (juga saat aplikasi dibuka dari notifikasi). */
 function useNotificationRouting() {
@@ -40,6 +41,7 @@ function RootStack() {
     <>
       <StatusBar style={isDark ? "light" : "dark"} />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }} />
+      <UpdateBanner />
     </>
   );
 }

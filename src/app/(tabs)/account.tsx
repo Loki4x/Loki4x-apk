@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { Alert, Linking, Pressable, StyleSheet, View } from "react-native";
 import { useI18n, type Locale } from "@/lib/i18n";
-import Constants from "expo-constants";
+import { currentBuild, currentVersion, requestUpdateCheck } from "@/lib/app-update";
 import { router, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Badge, Button, Card, Screen, SkCard, SkText, Skeleton, T } from "@/components/ui";
@@ -36,12 +36,14 @@ const LINKS: { label: string; path: string; icon: keyof typeof Ionicons.glyphMap
   { label: "Program referral", path: "/referral", icon: "gift-outline", app: true },
   { label: "Notifikasi", path: "/notifications", icon: "notifications-outline", app: true },
   { label: "Chat Admin", path: "/chat", icon: "headset-outline", app: true },
+  { label: "Link resmi Loki4x", path: "/links", icon: "link-outline", app: true },
 ];
 
 export default function AccountScreen() {
   const { profile, session, signOut, refreshProfile } = useAuth();
   // Muat ulang profil tiap tab dibuka (tier / masa aktif terbaru setelah upgrade disetujui).
   const [fresh, setFresh] = useState(false);
+  const [checking, setChecking] = useState(false);
   useFocusEffect(
     useCallback(() => {
       refreshProfile()
@@ -117,7 +119,7 @@ export default function AccountScreen() {
           <OptionCardSkeleton options={2} caption />
           <OptionCardSkeleton options={2} caption />
           <SkCard style={{ gap: 0, paddingVertical: 4 }}>
-            {[0, 1, 2, 3, 4].map((i) => (
+            {[0, 1, 2, 3, 4, 5].map((i) => (
               <View key={i} style={styles.link}>
                 <Skeleton height={20} width={20} radius={6} />
                 <SkText variant="body" width="50%" />
@@ -227,8 +229,22 @@ export default function AccountScreen() {
 
       <Button title="Keluar" variant="secondary" onPress={confirmSignOut} />
       <T variant="caption" color="textMuted" style={{ textAlign: "center" }}>
-        Loki4x Academy v{Constants.expoConfig?.version ?? "1.0.0"}
-      </T>
+            Loki4x Academy v{currentVersion()} · build {currentBuild()}
+          </T>
+          <T
+            variant="caption"
+            color="primary"
+            style={{ textAlign: "center", fontWeight: "700" }}
+            onPress={async () => {
+              if (checking) return;
+              setChecking(true);
+              const found = await requestUpdateCheck().catch(() => false);
+              setChecking(false);
+              if (!found) Alert.alert(t("Sudah versi terbaru"), t("Aplikasi kamu sudah versi terbaru."));
+            }}
+          >
+            {checking ? t("Mengecek…") : t("Cek pembaruan")}
+          </T>
         </>
       )}
     </Screen>
