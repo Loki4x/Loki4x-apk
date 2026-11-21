@@ -36,6 +36,7 @@ const GROUPS: { label: string; items: Item[] }[] = [
       { title: "Economic News", desc: "Kelola kalender berita ekonomi manual.", icon: "newspaper-outline", href: "/admin/news" },
       { title: "Actual Berita", desc: "Isi nilai Actual setelah berita rilis.", icon: "create-outline", href: "/admin/calendar-actuals" },
       { title: "Positioning", desc: "Kelola data long/short per simbol.", icon: "swap-vertical-outline", href: "/admin/positioning" },
+      { title: "Link Page", desc: "Halaman link ala Linktree: foto profil, bio, tema, sosmed, dan daftar link.", icon: "link-outline", href: "/admin/links" },
     ],
   },
   {

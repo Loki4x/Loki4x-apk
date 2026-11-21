@@ -75,6 +75,28 @@ jobs:
           fi
           node -e "const j=require('./google-services.json');const ok=(j.client||[]).some(c=>c.client_info?.android_client_info?.package_name==='id.web.loki4xacademy.app');if(!ok){console.error('::error::google-services.json tidak berisi aplikasi Android id.web.loki4xacademy.app. Tambahkan aplikasi dengan package name itu di Firebase.');process.exit(1)}console.log('google-services.json OK, project',j.project_info.project_id)"
 
+      # Nomor build Android (versionCode) = nomor run GitHub Actions, selalu naik di setiap build.
+      # Aplikasi membandingkan angka ini dengan latest.json untuk tahu ada update atau tidak.
+      # Nama versi (mis. 1.0.1) diambil dari app.json → expo.version: naikkan di setiap PR.
+      - name: Set nomor versi
+        run: |
+          node -e "const f='app.json';const j=require('./'+f);j.expo.android.versionCode=Number(process.env.RUN);require('fs').writeFileSync(f,JSON.stringify(j,null,2))"
+          echo "Versi $(node -p "require('./app.json').expo.version") · build ${RUN}"
+        env:
+          RUN: ${{ github.run_number }}
+
+      - name: Cek versi sudah dinaikkan (PR)
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch --depth=1 origin "${{ github.base_ref }}" || exit 0
+          BASE=$(git show "origin/${{ github.base_ref }}:app.json" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).expo.version))")
+          HEAD=$(node -p "require('./app.json').expo.version")
+          if [ "$BASE" = "$HEAD" ]; then
+            echo "::warning::Versi aplikasi masih $HEAD (sama dengan main). Naikkan expo.version di app.json supaya user melihat nomor versi baru."
+          else
+            echo "Versi naik: $BASE → $HEAD"
+          fi
+
       - name: Generate native Android project
         run: npx expo prebuild --platform android --no-install
 
@@ -102,8 +124,21 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
+          RUN: ${{ github.run_number }}
+          REPO: ${{ github.repository }}
         run: |
-          gh release create "build-${{ github.run_number }}" "$APK_NAME" \
-            --title "Loki4x Academy build ${{ github.run_number }}" \
-            --notes "APK otomatis dari commit ${GITHUB_SHA::7}. Unduh file .apk di bawah lalu install di HP Android." \
+          VERSION=$(node -p "require('./app.json').expo.version")
+          # Catatan rilis: judul PR yang di-merge (baris pertama isi commit merge), atau judul commit.
+          NOTES=$(git log -1 --pretty=%b | sed '/^\s*$/d' | head -1)
+          [ -z "$NOTES" ] && NOTES=$(git log -1 --pretty=%s)
+          export VERSION NOTES
+          # latest.json dibaca aplikasi saat dibuka untuk menampilkan banner update.
+          node -e "require('fs').writeFileSync('latest.json', JSON.stringify({version:process.env.VERSION,versionCode:Number(process.env.RUN),apkUrl:'https://github.com/'+process.env.REPO+'/releases/download/build-'+process.env.RUN+'/'+process.env.APK_NAME,notes:process.env.NOTES,publishedAt:new Date().toISOString()},null,2))"
+          cat latest.json
+          gh release create "build-${RUN}" "$APK_NAME" latest.json \
+            --title "Loki4x Academy v${VERSION} (build ${RUN})" \
+            --notes "${NOTES}
+
+          APK otomatis dari commit ${GITHUB_SHA::7}. Unduh file .apk di bawah lalu install di HP Android." \
             --latest
+        shell: bash
