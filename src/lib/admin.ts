@@ -4,6 +4,7 @@ import { pipSizeFor } from "@/shared/signal-metrics";
 import type { AcademyCategory } from "@/shared/academy";
 import type { SignalStatus, SignalUpdateType } from "@/shared/signal-types";
 import type { SupportMessage } from "@/lib/chat";
+import { filePart } from "@/lib/upload";
 
 // Menu admin aplikasi. Semua perubahan lewat API admin web (/api/mobile/admin/...), yang memakai
 // logika yang sama dengan panel admin web (validasi, audit log, email & push notifikasi).
@@ -37,9 +38,7 @@ export function wibDateTime(v: string): string | null | "invalid" {
   return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(s) ? s : "invalid";
 }
 
-function photoPart(uri: string, name: string) {
-  return { uri, name, type: "image/jpeg" } as unknown as Blob;
-}
+const photoPart = (uri: string, name: string) => filePart(uri, name);
 
 // ---------- Sinyal ----------
 

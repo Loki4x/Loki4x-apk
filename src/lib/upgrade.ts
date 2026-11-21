@@ -1,4 +1,5 @@
 import { apiGet, apiRequest, apiUpload } from "@/lib/api";
+import { filePart } from "@/lib/upload";
 
 // Upgrade & pembayaran: semua harga, promo, dan paket dihitung di server web (lib/upgrade-core.ts).
 
@@ -72,7 +73,7 @@ export function submitUsdt(input: { plan: Plan; network: UsdtNetwork; slipUri: s
   form.append("network", input.network);
   form.append("note", input.note);
   form.append("promo_code", input.promoCode ?? "");
-  form.append("slip", { uri: input.slipUri, name: "bukti-transfer.jpg", type: "image/jpeg" } as unknown as Blob);
+  form.append("slip", filePart(input.slipUri, "bukti-transfer.jpg"));
   return apiUpload<{ ok: true }>("/api/mobile/upgrade/usdt", form);
 }
 

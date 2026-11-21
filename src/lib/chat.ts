@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { apiGet, apiRequest, apiUpload } from "@/lib/api";
 import type { Tier } from "@/lib/auth";
+import { filePart } from "@/lib/upload";
 
 // Chat Komunitas & chat ke admin. Pesan dibaca langsung dari Supabase (RLS + realtime),
 // pengiriman lewat API web supaya tier, rate limit, foto (R2 privat), dan notifikasi sama dengan web.
@@ -62,7 +63,7 @@ export const chatError = (err: unknown) => {
   return ERRORS[msg] ?? msg;
 };
 
-const photo = (uri: string) => ({ uri, name: "foto.jpg", type: "image/jpeg" }) as unknown as Blob;
+const photo = (uri: string) => filePart(uri, "foto.jpg");
 
 // ---------- Komunitas ----------
 
