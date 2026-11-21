@@ -6,6 +6,7 @@ import { apiRequest, apiUpload } from "@/lib/api";
 import { todayWib } from "@/lib/format";
 import type { Trade, TradingAccount } from "@/shared/journal-types";
 import { tradesToCsv, type ImportRow } from "@/shared/trade-import";
+import { filePart } from "@/lib/upload";
 
 // Baca data jurnal langsung dari Supabase (RLS: hanya milik user sendiri).
 // Tulis lewat API web (/api/mobile/...) supaya validasi, P&L & notifikasi batas risiko sama dengan web.
@@ -122,8 +123,7 @@ export type PhotoSlot = "before" | "after";
 export function uploadTradePhoto(tradeId: string, slot: PhotoSlot, uri: string) {
   const form = new FormData();
   form.append("slot", slot);
-  // React Native: objek {uri, name, type} dikirim sebagai file.
-  form.append("photo", { uri, name: `${slot}.jpg`, type: "image/jpeg" } as unknown as Blob);
+  form.append("photo", filePart(uri, `${slot}.jpg`));
   return apiUpload<{ ok: true; url: string }>(`/api/mobile/trades/${tradeId}/photo`, form);
 }
 

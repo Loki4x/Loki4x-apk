@@ -2,6 +2,7 @@ import * as WebBrowser from "expo-web-browser";
 import { Linking } from "react-native";
 import { supabase } from "@/lib/supabase";
 import { apiRequest, apiUpload } from "@/lib/api";
+import { filePart } from "@/lib/upload";
 
 // Halaman link ala Linktree (sama dengan /links di web). Data dibaca langsung dari Supabase (RLS: publik
 // hanya melihat link aktif, admin melihat semua). Perubahan oleh admin lewat /api/mobile/admin/links/*.
@@ -85,9 +86,7 @@ export const openSocial = (url: string) => Linking.openURL(url);
 
 // ---------- Admin ----------
 
-function photoPart(uri: string, name: string) {
-  return { uri, name, type: "image/jpeg" } as unknown as Blob;
-}
+const photoPart = (uri: string, name: string) => filePart(uri, name);
 
 export function saveLinkProfile(fields: Record<string, string>, avatarUri: string | null, removeAvatar: boolean) {
   const form = new FormData();
