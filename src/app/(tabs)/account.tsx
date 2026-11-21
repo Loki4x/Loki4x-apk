@@ -6,6 +6,7 @@ import { router, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Badge, Button, Card, Screen, SkCard, SkText, Skeleton, T } from "@/components/ui";
 import { NotificationSettingCard } from "@/components/NotificationSettingCard";
+import { OptionCardSkeleton } from "@/components/Skeletons";
 import { useAuth, type Tier } from "@/lib/auth";
 import { useTheme, type ThemeMode, type ThemeStyle } from "@/lib/theme";
 import { WEB_URL } from "@/lib/config";
@@ -92,6 +93,41 @@ export default function AccountScreen() {
       </Card>
       )}
 
+      {!fresh ? (
+        <>
+          {profile?.is_admin && (
+            <SkCard style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+              <Skeleton height={22} width={22} radius={6} />
+              <View style={{ flex: 1 }}>
+                <SkText variant="body" width="35%" />
+                <SkText variant="caption" width="55%" />
+              </View>
+            </SkCard>
+          )}
+          <SkCard>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+              <View style={{ flex: 1 }}>
+                <SkText variant="body" width="30%" />
+                <SkText variant="caption" width="75%" />
+              </View>
+              <Skeleton height={28} width={48} radius={999} />
+            </View>
+          </SkCard>
+          <OptionCardSkeleton options={3} />
+          <OptionCardSkeleton options={2} caption />
+          <OptionCardSkeleton options={2} caption />
+          <SkCard style={{ gap: 0, paddingVertical: 4 }}>
+            {[0, 1, 2, 3, 4].map((i) => (
+              <View key={i} style={styles.link}>
+                <Skeleton height={20} width={20} radius={6} />
+                <SkText variant="body" width="50%" />
+              </View>
+            ))}
+          </SkCard>
+          <Skeleton height={48} radius={999} />
+        </>
+      ) : (
+        <>
       {profile?.is_admin && (
         <Pressable onPress={() => router.push("/admin")}>
           <Card style={{ flexDirection: "row", alignItems: "center", gap: 12, borderColor: colors.primary }}>
@@ -193,6 +229,8 @@ export default function AccountScreen() {
       <T variant="caption" color="textMuted" style={{ textAlign: "center" }}>
         Loki4x Academy v{Constants.expoConfig?.version ?? "1.0.0"}
       </T>
+        </>
+      )}
     </Screen>
   );
 }

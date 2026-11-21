@@ -6,6 +6,7 @@ import { Badge, Button, Card, Screen, SkCard, SkText, Skeleton, T } from "@/comp
 import { MarketSessionsCard } from "@/components/MarketSessionsCard";
 import { ToolsGrid } from "@/components/ToolsGrid";
 import { EquityChart } from "@/components/EquityChart";
+import { MarketSessionsSkeleton, ToolsGridSkeleton } from "@/components/Skeletons";
 import { DisciplineCard } from "@/components/DisciplineCard";
 import { unreadCount } from "@/lib/notifications";
 import { hasAccess, useAuth, type Tier } from "@/lib/auth";
@@ -100,8 +101,8 @@ function TradingSkeleton() {
               <SkText variant="body" width="75%" />
             </View>
           ))}
-          <SkText variant="caption" width="30%" />
         </View>
+        <SkText variant="caption" width="30%" />
       </SkCard>
       <SkCard>
         <View style={styles.cardHeader}>
@@ -188,6 +189,8 @@ export default function DashboardScreen() {
   const expiry = profile?.vip_expires_at && tier !== "FREE" ? formatDate(profile.vip_expires_at) : null;
   const trading = dash?.trading ?? null;
   const onboardingTodo = dash ? dash.onboarding.some((s) => !s.done) : false;
+  // Pertama kali dibuka: seluruh Beranda tampil sebagai kerangka sampai datanya siap, lalu muncul bersamaan.
+  const firstLoad = !dash && !dashError;
 
   return (
     <Screen refreshing={refreshing} onRefresh={onRefresh}>
@@ -220,7 +223,7 @@ export default function DashboardScreen() {
         </Card>
       )}
 
-      <MarketSessionsCard />
+      {firstLoad ? <MarketSessionsSkeleton /> : <MarketSessionsCard />}
 
       {dash && onboardingTodo && (
         <Card>
@@ -249,7 +252,7 @@ export default function DashboardScreen() {
         </Card>
       )}
 
-      <ToolsGrid tier={tier} />
+      {firstLoad ? <ToolsGridSkeleton /> : <ToolsGrid tier={tier} />}
 
       {isMember && !dash && !dashError && <TradingSkeleton />}
       {isMember && dashError && !dash && (
@@ -274,8 +277,8 @@ export default function DashboardScreen() {
                   <T style={{ color: k.color, fontWeight: "700", fontVariant: ["tabular-nums"] }}>{k.value}</T>
                 </View>
               ))}
-              <T variant="caption" color="textMuted">{t("{n} trade tertutup", { n: trading.closedTrades })}</T>
             </View>
+            <T variant="caption" color="textMuted">{t("{n} trade tertutup", { n: trading.closedTrades })}</T>
           </Card>
 
           <Card>
@@ -419,7 +422,7 @@ const styles = StyleSheet.create({
   greeting: { flexDirection: "row", alignItems: "flex-start", gap: 12 },
   cardHeader: { flexDirection: "row", alignItems: "center", gap: 6 },
   kpis: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  kpi: { flexBasis: "47%", flexGrow: 1, borderRadius: 12, padding: 12, gap: 2 },
+  kpi: { width: "47%", flexGrow: 1, borderRadius: 12, padding: 12, gap: 2 },
   newsRow: { flexDirection: "row", gap: 10, paddingTop: 10, borderTopWidth: StyleSheet.hairlineWidth },
   row: { flexDirection: "row", alignItems: "center", gap: 8, paddingTop: 8, borderTopWidth: StyleSheet.hairlineWidth },
   step: { flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 12, padding: 12 },

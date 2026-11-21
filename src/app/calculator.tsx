@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
   between: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
   row: { flexDirection: "row", gap: 10 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  cell: { flexBasis: "45%", flexGrow: 1, gap: 2 },
+  cell: { width: "45%", flexGrow: 1, gap: 2 },
   copy: { flexDirection: "row", alignItems: "center", gap: 4, borderWidth: 1, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6 },
   chip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 },
   quick: { flexDirection: "row", flexWrap: "wrap", gap: 6, alignItems: "center" },
