@@ -2,7 +2,8 @@ import { useCallback, useState } from "react";
 import { Image, Linking, Pressable, StyleSheet, View } from "react-native";
 import { Redirect, router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Badge, Button, Card, Screen, SkeletonPage, T } from "@/components/ui";
+import { Badge, Button, Card, Screen, T } from "@/components/ui";
+import { DetailSkeleton } from "@/components/Skeletons";
 import { hasAccess, useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { fetchSignal, formatPrice, STATUS_META, UPDATE_LABEL } from "@/lib/signals";
@@ -78,7 +79,7 @@ export default function SignalDetailScreen() {
     return (
       <Screen>
         {header}
-        <SkeletonPage variant="detail" />
+        <DetailSkeleton />
       </Screen>
     );
   }

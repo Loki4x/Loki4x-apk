@@ -2,7 +2,8 @@ import { useCallback, useMemo, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { Redirect, router, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Card, Screen, SkeletonPage, T } from "@/components/ui";
+import { Card, Screen, T } from "@/components/ui";
+import { BarCardsSkeleton, StatRowSkeleton } from "@/components/Skeletons";
 import { BackHeader, OptionChips } from "@/components/form";
 import { Locked } from "@/components/Locked";
 import { hasAccess, useAuth } from "@/lib/auth";
@@ -73,7 +74,10 @@ export default function CotScreen() {
       <T variant="bodySm" color="textSecondary">Data resmi CFTC (Commitment of Traders) — dipakai juga oleh CME Group.</T>
       {data?.reportDate && <T variant="caption" color="textMuted">Terakhir diperbarui {formatDate(data.reportDate)}</T>}
       {error && <T variant="bodySm" color="error">{error}</T>}
-      {!data && !error && <SkeletonPage variant="list" count={4} />}
+      {!data && !error && <>
+          <StatRowSkeleton count={2} />
+          <BarCardsSkeleton count={4} />
+        </>}
       {data && all.length === 0 && <T variant="bodySm" color="textMuted">Data COT belum tersedia.</T>}
 
       {mostLong && mostShort && biggest && (

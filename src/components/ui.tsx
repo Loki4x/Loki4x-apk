@@ -208,7 +208,20 @@ const styles = StyleSheet.create({
 // ---------- Skeleton (kerangka berkilau saat memuat, sama dengan web) ----------
 
 /** Satu blok abu-abu dengan kilau yang bergerak dari kiri ke kanan. */
-export function Skeleton({ height = 14, width = "100%", radius = 10, style }: { height?: number; width?: number | `${number}%`; radius?: number; style?: StyleProp<ViewStyle> }) {
+export function Skeleton({
+  height = 14,
+  width = "100%",
+  radius = 10,
+  fill,
+  style,
+}: {
+  height?: number;
+  width?: number | `${number}%`;
+  radius?: number;
+  /** Isi penuh wadahnya (abaikan height/width), mis. untuk sel kalender dengan aspectRatio. */
+  fill?: boolean;
+  style?: StyleProp<ViewStyle>;
+}) {
   const { isDark } = useTheme();
   const [w, setW] = useState(0);
   const anim = useRef(new Animated.Value(0)).current;
@@ -221,7 +234,11 @@ export function Skeleton({ height = 14, width = "100%", radius = 10, style }: { 
   return (
     <View
       onLayout={(e) => setW(e.nativeEvent.layout.width)}
-      style={[{ height, width, borderRadius: radius, overflow: "hidden", backgroundColor: isDark ? "rgba(148,163,184,0.12)" : "rgba(28,31,38,0.07)" }, style]}
+      style={[
+        fill ? { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 } : { height, width },
+        { borderRadius: radius, overflow: "hidden", backgroundColor: isDark ? "rgba(148,163,184,0.12)" : "rgba(28,31,38,0.07)" },
+        style,
+      ]}
     >
       {w > 0 && (
         <Animated.View
@@ -239,6 +256,31 @@ export function Skeleton({ height = 14, width = "100%", radius = 10, style }: { 
           </Svg>
         </Animated.View>
       )}
+    </View>
+  );
+}
+
+/** Garis skeleton seukuran satu baris teks (tinggi baris sama dengan <T variant>), supaya tata letak tidak bergeser saat data tampil. */
+export function SkText({ variant = "body", width = "60%", style }: { variant?: TextVariant; width?: number | `${number}%`; style?: StyleProp<ViewStyle> }) {
+  const size = TEXT_SIZES[variant].fontSize ?? 15;
+  const line = Math.round(size * 1.33);
+  const h = Math.round(size * 0.85);
+  return <Skeleton height={h} width={width} radius={6} style={[{ marginVertical: (line - h) / 2 }, style]} />;
+}
+
+/** Wadah kartu skeleton dengan padding, sudut, dan jarak yang sama persis dengan <Card>. */
+export function SkCard({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
+  const { colors, glass, isDark } = useTheme();
+  return (
+    <View
+      style={[
+        styles.card,
+        { backgroundColor: colors.surface, borderColor: colors.border },
+        glass && { borderTopColor: isDark ? "rgba(255,255,255,0.18)" : "#FFFFFF" },
+        style,
+      ]}
+    >
+      {children}
     </View>
   );
 }
@@ -261,11 +303,13 @@ export function SkeletonPage({ variant = "list", count = 3 }: { variant?: Skelet
       </View>
     </View>
   );
+  // Kartu umum (judul tebal, 2 baris keterangan, badge status) — bentuk paling umum di menu admin.
   const listCard = (i: number) => (
     <View key={i} style={box}>
-      <Skeleton height={18} width="55%" />
-      <Skeleton height={32} />
-      <Skeleton height={12} width="70%" />
+      <SkText variant="bodySm" width="55%" />
+      <SkText variant="caption" width="40%" />
+      <SkText variant="caption" width="75%" />
+      <Skeleton height={20} width={72} radius={999} />
     </View>
   );
   return (

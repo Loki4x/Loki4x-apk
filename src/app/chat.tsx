@@ -3,7 +3,8 @@ import { FlatList, KeyboardAvoidingView, Linking, Platform, StyleSheet, View } f
 import { Redirect } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { SkeletonPage, T } from "@/components/ui";
+import { T } from "@/components/ui";
+import { ChatSkeleton } from "@/components/Skeletons";
 import { BackHeader } from "@/components/form";
 import { ChatComposer } from "@/components/ChatComposer";
 import { GlassBackground } from "@/components/GlassBackground";
@@ -102,7 +103,7 @@ export default function SupportChatScreen() {
         </View>
         {messages === null ? (
           <View style={{ padding: 16 }}>
-            <SkeletonPage variant="list" count={4} />
+            <ChatSkeleton />
           </View>
         ) : (
           <FlatList

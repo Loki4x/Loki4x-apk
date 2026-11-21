@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Badge, T } from "@/components/ui";
+import { Badge, SkText, Skeleton, T } from "@/components/ui";
 import { useTheme } from "@/lib/theme";
 import { formatPrice, STATUS_META } from "@/lib/signals";
 import { daysAgo } from "@/lib/format";
@@ -75,3 +75,30 @@ const styles = StyleSheet.create({
   level: { flex: 1, borderRadius: 10, padding: 8, gap: 2 },
   footer: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
 });
+
+/** Kerangka SignalCard saat sinyal dimuat (ukuran sama persis dengan kartu aslinya). */
+export function SignalCardSkeleton() {
+  const { colors } = useTheme();
+  return (
+    <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+      <View style={styles.header}>
+        <Skeleton height={22} width={44} radius={8} />
+        <SkText variant="h3" width="35%" style={{ flex: 0 }} />
+        <View style={{ flex: 1 }} />
+        <Skeleton height={20} width={64} radius={999} />
+      </View>
+      <View style={styles.levels}>
+        {[0, 1, 2].map((i) => (
+          <View key={i} style={[styles.level, { backgroundColor: colors.surface2 }]}>
+            <SkText variant="caption" width="45%" />
+            <SkText variant="bodySm" width="75%" />
+          </View>
+        ))}
+      </View>
+      <View style={styles.footer}>
+        <SkText variant="caption" width={70} />
+        <SkText variant="bodySm" width={90} />
+      </View>
+    </View>
+  );
+}

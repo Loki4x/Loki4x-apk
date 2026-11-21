@@ -1,9 +1,10 @@
+import { useCallback, useState } from "react";
 import { Alert, Linking, Pressable, StyleSheet, View } from "react-native";
 import { useI18n, type Locale } from "@/lib/i18n";
 import Constants from "expo-constants";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Badge, Button, Card, Screen, T } from "@/components/ui";
+import { Badge, Button, Card, Screen, SkCard, SkText, Skeleton, T } from "@/components/ui";
 import { NotificationSettingCard } from "@/components/NotificationSettingCard";
 import { useAuth, type Tier } from "@/lib/auth";
 import { useTheme, type ThemeMode, type ThemeStyle } from "@/lib/theme";
@@ -37,7 +38,16 @@ const LINKS: { label: string; path: string; icon: keyof typeof Ionicons.glyphMap
 ];
 
 export default function AccountScreen() {
-  const { profile, session, signOut } = useAuth();
+  const { profile, session, signOut, refreshProfile } = useAuth();
+  // Muat ulang profil tiap tab dibuka (tier / masa aktif terbaru setelah upgrade disetujui).
+  const [fresh, setFresh] = useState(false);
+  useFocusEffect(
+    useCallback(() => {
+      refreshProfile()
+        .catch(() => {})
+        .finally(() => setFresh(true));
+    }, [refreshProfile])
+  );
   const { colors, mode, setMode, style, setStyle } = useTheme();
   const { t, locale, setLocale } = useI18n();
   const tier = profile?.effectiveTier ?? "FREE";
@@ -53,6 +63,18 @@ export default function AccountScreen() {
     <Screen>
       <T variant="h2">Akun</T>
 
+      {!fresh || !profile ? (
+        <SkCard>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+            <Skeleton height={48} width={48} radius={24} />
+            <View style={{ flex: 1 }}>
+              <SkText variant="body" width="50%" />
+              <SkText variant="caption" width="70%" />
+            </View>
+            <Skeleton height={20} width={56} radius={999} />
+          </View>
+        </SkCard>
+      ) : (
       <Card>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
           <View style={[styles.avatar, { backgroundColor: colors.primarySubtle }]}>
@@ -68,6 +90,7 @@ export default function AccountScreen() {
           <T variant="caption" color="textSecondary">Aktif sampai {formatDate(profile.vip_expires_at)}</T>
         )}
       </Card>
+      )}
 
       {profile?.is_admin && (
         <Pressable onPress={() => router.push("/admin")}>

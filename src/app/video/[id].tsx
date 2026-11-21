@@ -3,7 +3,8 @@ import { Linking, StyleSheet, View } from "react-native";
 import { Redirect, useLocalSearchParams } from "expo-router";
 import { WebView } from "react-native-webview";
 import { Ionicons } from "@expo/vector-icons";
-import { Button, Card, Screen, SkeletonPage, T } from "@/components/ui";
+import { Button, Card, Screen, T } from "@/components/ui";
+import { VideoCardsSkeleton } from "@/components/Skeletons";
 import { BackHeader } from "@/components/form";
 import { hasAccess, useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -66,7 +67,7 @@ export default function VideoScreen() {
   return (
     <Screen>
       <BackHeader title="Video" fallback={slug ? `/course/${slug}` : "/academy"} />
-      {video === undefined && <SkeletonPage variant="detail" />}
+      {video === undefined && <VideoCardsSkeleton count={1} />}
       {video === null && <T variant="bodySm" color="error">Video tidak ditemukan.</T>}
       {video && (
         <>

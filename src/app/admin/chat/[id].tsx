@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { FlatList, KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
 import { Redirect, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { SkeletonPage, T } from "@/components/ui";
+import { T } from "@/components/ui";
+import { ChatSkeleton } from "@/components/Skeletons";
 import { BackHeader } from "@/components/form";
 import { ChatComposer } from "@/components/ChatComposer";
 import { GlassBackground } from "@/components/GlassBackground";
@@ -95,7 +96,7 @@ export default function AdminChatThreadScreen() {
         </View>
         {messages === null ? (
           <View style={{ padding: 16 }}>
-            <SkeletonPage variant="list" count={4} />
+            <ChatSkeleton />
           </View>
         ) : (
           <FlatList
