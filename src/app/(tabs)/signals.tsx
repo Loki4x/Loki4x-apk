@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { router, useFocusEffect } from "expo-router";
-import { Button, Card, Screen, SkeletonPage, T } from "@/components/ui";
-import { SignalCard } from "@/components/SignalCard";
+import { Button, Card, Screen, SkCard, SkText, T } from "@/components/ui";
+import { SignalCard, SignalCardSkeleton } from "@/components/SignalCard";
 import { hasAccess, useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { fetchSignals } from "@/lib/signals";
@@ -108,6 +108,16 @@ export default function SignalsScreen() {
         onChange={setType}
       />
 
+      {signals === null && !error ? (
+        <SkCard style={styles.stats}>
+          {[0, 1, 2, 3].map((i) => (
+            <View key={i} style={styles.stat}>
+              <SkText variant="caption" width="55%" />
+              <SkText variant="body" width="40%" />
+            </View>
+          ))}
+        </SkCard>
+      ) : (
       <Card style={styles.stats}>
         {[
           { label: "Win rate", value: `${stats.winRate.toFixed(0)}%`, color: colors.text },
@@ -121,6 +131,7 @@ export default function SignalsScreen() {
           </View>
         ))}
       </Card>
+      )}
 
       <Segmented<PositionTab>
         options={[
@@ -134,7 +145,7 @@ export default function SignalsScreen() {
       {error ? (
         <T variant="bodySm" color="error">{error}</T>
       ) : signals === null ? (
-        <SkeletonPage variant="kpi" />
+        [0, 1, 2].map((i) => <SignalCardSkeleton key={i} />)
       ) : list.length === 0 ? (
         <Card style={{ alignItems: "center", paddingVertical: 24 }}>
           <T variant="bodySm" color="textMuted">

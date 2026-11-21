@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { Redirect, router } from "expo-router";
-import { Badge, Card, Screen, SkeletonPage, T } from "@/components/ui";
+import { Badge, Card, Screen, T } from "@/components/ui";
+import { IconRowsSkeleton } from "@/components/Skeletons";
 import { BackHeader, OptionChips } from "@/components/form";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -49,7 +50,7 @@ export default function AdminChatListScreen() {
         onChange={setFilter}
       />
       {error && <T variant="bodySm" color="error">{error}</T>}
-      {!data && !error && <SkeletonPage variant="list" count={5} />}
+      {!data && !error && <IconRowsSkeleton icon={0} />}
       {data && shown.length === 0 && (
         <Card>
           <T variant="bodySm" color="textMuted">Belum ada percakapan.</T>

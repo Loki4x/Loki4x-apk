@@ -2,7 +2,8 @@ import { useCallback, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Badge, Button, Card, ProgressBar, Screen, SkeletonPage, T } from "@/components/ui";
+import { Badge, Button, Card, ProgressBar, Screen, T } from "@/components/ui";
+import { AcademySkeleton } from "@/components/Skeletons";
 import { hasAccess, useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { fetchAttempts, fetchQuizCounts, fetchVideos, fetchWatchedIds } from "@/lib/academy";
@@ -101,7 +102,7 @@ export default function AcademyScreen() {
         </Card>
       )}
 
-      {!data && !error && <SkeletonPage variant="kpi" />}
+      {!data && !error && <AcademySkeleton />}
 
       {data &&
         ACADEMY_SLUGS.map((slug) => {

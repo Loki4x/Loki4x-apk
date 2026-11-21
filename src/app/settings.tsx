@@ -1,7 +1,8 @@
+import { useI18n } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Switch, View } from "react-native";
 import { Redirect } from "expo-router";
-import { Button, Card, Screen, SkeletonPage, T } from "@/components/ui";
+import { Button, Card, Screen, SkCard, SkText, Skeleton, T } from "@/components/ui";
 import { BackHeader, Field } from "@/components/form";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -25,6 +26,7 @@ type Msg = { ok: boolean; text: string } | null;
 export default function SettingsScreen() {
   const { session, refreshProfile } = useAuth();
   const { colors } = useTheme();
+  const { t } = useI18n();
   const userId = session?.user.id;
   const hasPassword = (session?.user.identities ?? []).some((i) => i.provider === "email");
 
@@ -43,6 +45,36 @@ export default function SettingsScreen() {
     notify_expiry: true,
   });
   const [pairs, setPairs] = useState<string[]>([]);
+  const [timezone, setTimezone] = useState("Asia/Jakarta");
+  const [tzMsg, setTzMsg] = useState<Msg>(null);
+  const [clock, setClock] = useState("");
+
+  // Jam sekarang di zona waktu terpilih (sama dengan Pengaturan → Akun di web).
+  useEffect(() => {
+    const tick = () => {
+      try {
+        setClock(new Intl.DateTimeFormat("id-ID", { timeZone: timezone, hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }).format(new Date()));
+      } catch {
+        setClock("");
+      }
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [timezone]);
+
+  async function saveTimezone(tz: string) {
+    const prev = timezone;
+    setTimezone(tz);
+    setTzMsg(null);
+    const { error } = await supabase.from("profiles").update({ timezone: tz }).eq("id", userId);
+    if (error) {
+      setTimezone(prev);
+      setTzMsg({ ok: false, text: error.message });
+    } else {
+      setTzMsg({ ok: true, text: "Zona waktu disimpan." });
+    }
+  }
   const [prefsMsg, setPrefsMsg] = useState<Msg>(null);
 
   const [current, setCurrent] = useState("");
@@ -56,7 +88,7 @@ export default function SettingsScreen() {
     if (!userId) return;
     supabase
       .from("profiles")
-      .select("full_name, username, bio, notify_signals, notify_weekly, notify_news, notify_receipts, notify_expiry, signal_pairs")
+      .select("full_name, username, bio, timezone, notify_signals, notify_weekly, notify_news, notify_receipts, notify_expiry, signal_pairs")
       .eq("id", userId)
       .maybeSingle()
       .then(({ data }) => {
@@ -64,6 +96,7 @@ export default function SettingsScreen() {
           setFullName(data.full_name ?? "");
           setUsername(data.username ?? "");
           setBio(data.bio ?? "");
+          setTimezone((data as { timezone?: string | null }).timezone ?? "Asia/Jakarta");
           setPrefs({
             notify_signals: data.notify_signals ?? true,
             notify_weekly: data.notify_weekly ?? true,
@@ -137,7 +170,7 @@ export default function SettingsScreen() {
   return (
     <Screen>
       <BackHeader title="Pengaturan" fallback="/account" />
-      {!loaded && <SkeletonPage variant="kpi" />}
+      {!loaded && <SettingsSkeleton />}
 
       {loaded && (
         <>
@@ -148,6 +181,27 @@ export default function SettingsScreen() {
             <Field label="Bio" value={bio} onChangeText={setBio} placeholder="Bio singkat tentang diri kamu" multiline autoCapitalize="sentences" />
             {profileMsg && <T variant="bodySm" color={profileMsg.ok ? "success" : "error"}>{profileMsg.text}</T>}
             <Button title="Simpan profil" onPress={saveProfile} loading={savingProfile} />
+          </Card>
+
+          <Card style={{ gap: 12 }}>
+            <T variant="label" color="textMuted">Zona waktu</T>
+            <View style={styles.pairs}>
+              {TIMEZONES.map((tz) => {
+                const on = tz === timezone;
+                return (
+                  <Pressable
+                    key={tz}
+                    onPress={() => !on && saveTimezone(tz)}
+                    style={[styles.pair, { borderColor: on ? colors.primary : colors.border, backgroundColor: on ? colors.primarySubtle : colors.surface2 }]}
+                  >
+                    <T variant="caption" style={{ fontWeight: "600", color: on ? colors.primary : colors.textSecondary }}>{tz}</T>
+                  </Pressable>
+                );
+              })}
+            </View>
+            {clock ? <T variant="caption" color="textMuted">{t("Jam sekarang: {time}", { time: clock })}</T> : null}
+            <T variant="caption" color="textMuted">Dipakai untuk email laporan & pengingat. Jam sinyal dan kalender di aplikasi tetap WIB.</T>
+            {tzMsg && <T variant="bodySm" color={tzMsg.ok ? "success" : "error"}>{tzMsg.text}</T>}
           </Card>
 
           <Card style={{ gap: 12 }}>
@@ -211,6 +265,34 @@ export default function SettingsScreen() {
         </>
       )}
     </Screen>
+  );
+}
+
+const TIMEZONES = ["Asia/Jakarta", "Asia/Makassar", "Asia/Jayapura", "Asia/Singapore", "Asia/Tokyo", "Europe/London", "America/New_York", "UTC"];
+
+/** Kerangka Pengaturan: kartu Profil (3 kolom isian + tombol) dan kartu pilihan, sama dengan susunan aslinya. */
+function SettingsSkeleton() {
+  return (
+    <>
+      <SkCard style={{ gap: 12 }}>
+        <SkText variant="label" width="20%" />
+        {[0, 1, 2].map((i) => (
+          <View key={i} style={{ gap: 6 }}>
+            <SkText variant="bodySm" width="30%" />
+            <Skeleton height={i === 2 ? 84 : 46} radius={12} />
+          </View>
+        ))}
+        <Skeleton height={48} radius={999} />
+      </SkCard>
+      <SkCard style={{ gap: 12 }}>
+        <SkText variant="label" width="25%" />
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
+          {[90, 100, 96, 110, 80].map((w, i) => (
+            <Skeleton key={i} height={28} width={w} radius={999} />
+          ))}
+        </View>
+      </SkCard>
+    </>
   );
 }
 

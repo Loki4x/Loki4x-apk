@@ -3,7 +3,8 @@ import { Pressable, View } from "react-native";
 import { Redirect, useFocusEffect } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { Ionicons } from "@expo/vector-icons";
-import { Card, Screen, SkeletonPage, T } from "@/components/ui";
+import { Card, Screen, T } from "@/components/ui";
+import { NewsCardsSkeleton } from "@/components/Skeletons";
 import { BackHeader, OptionChips } from "@/components/form";
 import { Locked } from "@/components/Locked";
 import { hasAccess, useAuth } from "@/lib/auth";
@@ -77,7 +78,7 @@ export default function MarketNewsScreen() {
         onChange={setFilter}
       />
       {error && <T variant="bodySm" color="error">{error}</T>}
-      {!news && !error && <SkeletonPage variant="list" count={4} />}
+      {!news && !error && <NewsCardsSkeleton />}
       {news && shown.length === 0 && <T variant="bodySm" color="textMuted">Belum ada berita untuk kategori ini.</T>}
       {shown.slice(0, 80).map((n) => (
         <Pressable key={n.id} onPress={() => WebBrowser.openBrowserAsync(n.link)}>

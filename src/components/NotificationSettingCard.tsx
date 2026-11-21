@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, Linking, Switch, View } from "react-native";
 import * as Notifications from "expo-notifications";
 import * as SecureStore from "expo-secure-store";
-import { Card, T } from "@/components/ui";
+import { Card, Skeleton, T } from "@/components/ui";
 import { useTheme } from "@/lib/theme";
 import { isPushPreferred, pushAvailable, registerForPush, unregisterPush, type PushStatus } from "@/lib/push";
 
@@ -16,6 +16,7 @@ export function NotificationSettingCard() {
   const { colors } = useTheme();
   const [enabled, setEnabled] = useState(false);
   const [busy, setBusy] = useState(true);
+  const [ready, setReady] = useState(false);
   const [status, setStatus] = useState<PushStatus | null>(null);
 
   useEffect(() => {
@@ -23,6 +24,7 @@ export function NotificationSettingCard() {
       if (!pushAvailable) {
         setStatus("unavailable");
         setBusy(false);
+        setReady(true);
         return;
       }
       const preferred = await isPushPreferred();
@@ -31,6 +33,7 @@ export function NotificationSettingCard() {
       setEnabled(preferred && perm === "granted" && !!token);
       if (preferred && perm !== "granted") setStatus("denied");
       setBusy(false);
+      setReady(true);
     })();
   }, []);
 
@@ -55,7 +58,9 @@ export function NotificationSettingCard() {
           <T style={{ fontWeight: "600" }}>Notifikasi</T>
           <T variant="caption" color="textMuted">Sinyal baru & update TP/SL, pengingat news, batas risiko, pengumuman.</T>
         </View>
-        {busy ? (
+        {!ready ? (
+          <Skeleton height={28} width={48} radius={999} />
+        ) : busy ? (
           <ActivityIndicator color={colors.primary} />
         ) : (
           <Switch

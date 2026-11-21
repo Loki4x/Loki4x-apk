@@ -2,7 +2,8 @@ import { useCallback, useState } from "react";
 import { Alert, Image, Pressable, StyleSheet, View } from "react-native";
 import { Redirect, router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Badge, Button, Card, Screen, SkeletonPage, T } from "@/components/ui";
+import { Badge, Button, Card, Screen, T } from "@/components/ui";
+import { DetailSkeleton } from "@/components/Skeletons";
 import { BackHeader, Field, OptionChips } from "@/components/form";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -146,7 +147,7 @@ export default function AdminSignalDetail() {
   return (
     <Screen>
       <BackHeader title="Admin · Sinyal" fallback="/admin/signals" />
-      {signal === undefined && <SkeletonPage variant="detail" />}
+      {signal === undefined && <DetailSkeleton />}
       {signal === null && <T variant="bodySm" color="error">Sinyal tidak ditemukan.</T>}
       {signal && (
         <>

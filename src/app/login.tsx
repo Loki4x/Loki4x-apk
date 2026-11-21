@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Image, KeyboardAvoidingView, Linking, Platform, Pressable, StyleSheet, TextInput, View } from "react-native";
+import { Image, KeyboardAvoidingView, Platform, Pressable, StyleSheet, TextInput, View } from "react-native";
 import { Redirect, router } from "expo-router";
 import { authErrorMessage, classifyAuthError } from "@/lib/auth-errors";
 import { Ionicons } from "@expo/vector-icons";
@@ -7,7 +7,7 @@ import { Button, Card, Screen, T } from "@/components/ui";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
-import { WEB_URL, isConfigured } from "@/lib/config";
+import { isConfigured } from "@/lib/config";
 import { signInWithGoogle } from "@/lib/google-auth";
 
 function friendlyError(message: string): string {
@@ -134,7 +134,7 @@ export default function LoginScreen() {
             <T style={{ fontWeight: "600" }}>{googleLoading ? "Membuka Google…" : "Masuk dengan Google"}</T>
           </Pressable>
 
-          <Pressable onPress={() => Linking.openURL(`${WEB_URL}/forgot-password`)}>
+          <Pressable onPress={() => router.push("/forgot-password")}>
             <T variant="bodySm" color="primary" style={{ textAlign: "center" }}>Lupa password?</T>
           </Pressable>
         </Card>

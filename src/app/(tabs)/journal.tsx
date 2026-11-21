@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Badge, Button, Card, Screen, SkeletonPage, T } from "@/components/ui";
+import { Badge, Button, Card, Screen, SkCard, SkText, Skeleton, T } from "@/components/ui";
 import { DisciplineCard } from "@/components/DisciplineCard";
 import { hasAccess, useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -54,6 +54,12 @@ export default function JournalScreen() {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [exporting, setExporting] = useState(false);
+  // Cari & filter riwayat trade (sama dengan tabel Journal di web).
+  const [search, setSearch] = useState("");
+  const [sideFilter, setSideFilter] = useState<"ALL" | "BUY" | "SELL">("ALL");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "OPEN" | "CLOSED">("ALL");
+  const [strategyFilter, setStrategyFilter] = useState<string>("ALL");
+  const [showFilters, setShowFilters] = useState(false);
 
   const allowed = hasAccess(profile?.effectiveTier, "MEMBERSHIP");
   const userId = session?.user.id;
@@ -110,6 +116,23 @@ export default function JournalScreen() {
       recent: [...trades].reverse(),
     };
   }, [account, trades, tx]);
+
+  const strategies = useMemo(
+    () => Array.from(new Set((trades ?? []).map((t) => t.strategy).filter((x): x is string => !!x))).sort(),
+    [trades]
+  );
+  const filtered = useMemo(() => {
+    if (!view) return [];
+    const q = search.trim().toLowerCase();
+    return view.recent.filter(
+      (t) =>
+        (!q || t.symbol.toLowerCase().includes(q)) &&
+        (sideFilter === "ALL" || t.side === sideFilter) &&
+        (statusFilter === "ALL" || t.status === statusFilter) &&
+        (strategyFilter === "ALL" || t.strategy === strategyFilter)
+    );
+  }, [view, search, sideFilter, statusFilter, strategyFilter]);
+  const filtering = !!search.trim() || sideFilter !== "ALL" || statusFilter !== "ALL" || strategyFilter !== "ALL";
 
   async function selectAccount(id: string) {
     if (!userId || id === activeId) return;
@@ -189,7 +212,13 @@ export default function JournalScreen() {
         </ScrollView>
       )}
 
-      {(!accounts || (account && !view)) && !error && <SkeletonPage variant="kpi" />}
+      {!accounts && !error && (
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          <Skeleton height={34} width={110} radius={999} />
+          <Skeleton height={34} width={120} radius={999} />
+        </View>
+      )}
+      {(!accounts || (account && !view)) && !error && <JournalSkeleton />}
 
       {account && view && (
         <>
@@ -261,13 +290,88 @@ export default function JournalScreen() {
               </Card>
             ))}
 
-          <T variant="label" color="textMuted">Riwayat trade</T>
+          <View style={styles.histHead}>
+            <T variant="label" color="textMuted" style={{ flex: 1 }}>Riwayat trade</T>
+            <Pressable onPress={() => setShowFilters((v) => !v)} hitSlop={8} style={styles.filterBtn}>
+              <Ionicons name="options-outline" size={16} color={filtering ? colors.primary : colors.textSecondary} />
+              <T variant="caption" style={{ fontWeight: "700", color: filtering ? colors.primary : colors.textSecondary }}>Filter</T>
+            </Pressable>
+          </View>
+          <View style={[styles.search, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <Ionicons name="search" size={16} color={colors.textMuted} />
+            <TextInput
+              value={search}
+              onChangeText={setSearch}
+              placeholder={tx("Cari simbol…")}
+              placeholderTextColor={colors.textMuted}
+              autoCapitalize="characters"
+              autoCorrect={false}
+              style={{ flex: 1, color: colors.text, paddingVertical: 9 }}
+            />
+            {!!search && (
+              <Pressable onPress={() => setSearch("")} hitSlop={8}>
+                <Ionicons name="close-circle" size={16} color={colors.textMuted} />
+              </Pressable>
+            )}
+          </View>
+          {showFilters && (
+            <Card style={{ gap: 10 }}>
+              <FilterRow
+                label="Arah"
+                value={sideFilter}
+                onChange={setSideFilter}
+                options={[
+                  { value: "ALL", label: "Semua" },
+                  { value: "BUY", label: "Buy" },
+                  { value: "SELL", label: "Sell" },
+                ]}
+              />
+              <FilterRow
+                label="Status"
+                value={statusFilter}
+                onChange={setStatusFilter}
+                options={[
+                  { value: "ALL", label: "Semua" },
+                  { value: "OPEN", label: "Open" },
+                  { value: "CLOSED", label: "Closed" },
+                ]}
+              />
+              {strategies.length > 0 && (
+                <FilterRow
+                  label="Strategi"
+                  value={strategyFilter}
+                  onChange={setStrategyFilter}
+                  options={[{ value: "ALL", label: "Semua" }, ...strategies.map((x) => ({ value: x, label: x }))]}
+                />
+              )}
+              {filtering && (
+                <T
+                  variant="caption"
+                  color="primary"
+                  style={{ fontWeight: "700" }}
+                  onPress={() => {
+                    setSearch("");
+                    setSideFilter("ALL");
+                    setStatusFilter("ALL");
+                    setStrategyFilter("ALL");
+                  }}
+                >
+                  Reset filter
+                </T>
+              )}
+            </Card>
+          )}
+          {filtering && <T variant="caption" color="textMuted">{tx("{n} dari {total} trade", { n: filtered.length, total: view.recent.length })}</T>}
           {view.recent.length === 0 ? (
             <Card>
               <T variant="bodySm" color="textMuted">Belum ada trade. Tekan "+ Tambah trade" atau import statement MT4/MT5.</T>
             </Card>
+          ) : filtered.length === 0 ? (
+            <Card>
+              <T variant="bodySm" color="textMuted">Tidak ada trade yang cocok dengan filter.</T>
+            </Card>
           ) : (
-            view.recent.slice(0, 100).map((t) => (
+            filtered.slice(0, 100).map((t) => (
               <Pressable
                 key={t.id}
                 onPress={() => router.push(`/trade/${t.id}`)}
@@ -298,7 +402,7 @@ export default function JournalScreen() {
               </Pressable>
             ))
           )}
-          {view.recent.length > 100 && (
+          {filtered.length > 100 && (
             <T variant="caption" color="textMuted" style={{ textAlign: "center" }}>
               Menampilkan 100 trade terbaru. Semua trade ikut ter-export di Export CSV.
             </T>
@@ -309,11 +413,83 @@ export default function JournalScreen() {
   );
 }
 
+function FilterRow<V extends string>({ label, value, onChange, options }: { label: string; value: V; onChange: (v: V) => void; options: { value: V; label: string }[] }) {
+  const { colors } = useTheme();
+  return (
+    <View style={{ gap: 6 }}>
+      <T variant="caption" color="textMuted">{label}</T>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
+        {options.map((o) => {
+          const active = o.value === value;
+          return (
+            <Pressable
+              key={o.value}
+              onPress={() => onChange(o.value)}
+              style={[styles.chip, { paddingVertical: 5, borderColor: active ? colors.primary : colors.border, backgroundColor: active ? colors.primarySubtle : colors.surface2 }]}
+            >
+              <T variant="caption" style={{ fontWeight: "700", color: active ? colors.primary : colors.textSecondary }}>{o.label}</T>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+    </View>
+  );
+}
+
+/** Kerangka tab Journal: sama persis dengan susunan KPI, tombol, disiplin, dan riwayat trade. */
+function JournalSkeleton() {
+  const { colors } = useTheme();
+  return (
+    <>
+      <SkCard style={styles.kpis}>
+        {Array.from({ length: 6 }, (_, i) => (
+          <View key={i} style={styles.kpi}>
+            <SkText variant="caption" width="60%" />
+            <SkText variant="body" width="80%" />
+          </View>
+        ))}
+      </SkCard>
+      <Skeleton height={48} radius={999} />
+      <View style={{ flexDirection: "row", gap: 10 }}>
+        <Skeleton height={48} radius={999} style={{ flex: 1 }} />
+        <Skeleton height={48} radius={999} style={{ flex: 1 }} />
+      </View>
+      <Skeleton height={48} radius={999} />
+      <SkCard>
+        <SkText variant="label" width="35%" />
+        <SkText variant="bodySm" width="70%" />
+        <Skeleton height={8} radius={99} />
+        <SkText variant="bodySm" width="55%" />
+        <Skeleton height={8} radius={99} />
+      </SkCard>
+      <SkText variant="label" width="30%" />
+      {[0, 1, 2, 3].map((i) => (
+        <View key={i} style={[styles.trade, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={{ flex: 1, gap: 2 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+              <SkText variant="body" width={70} />
+              <Skeleton height={18} width={40} radius={999} />
+            </View>
+            <SkText variant="caption" width="50%" />
+          </View>
+          <View style={{ alignItems: "flex-end", gap: 2 }}>
+            <SkText variant="body" width={60} />
+            <SkText variant="caption" width={44} />
+          </View>
+        </View>
+      ))}
+    </>
+  );
+}
+
 const styles = StyleSheet.create({
   chip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 7 },
   manage: { flexDirection: "row", alignItems: "center", gap: 5, borderStyle: "dashed" },
   kpis: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
   kpi: { flexBasis: "29%", flexGrow: 1, gap: 2 },
   groupRow: { flexDirection: "row", alignItems: "center", gap: 6 },
+  histHead: { flexDirection: "row", alignItems: "center", gap: 8 },
+  filterBtn: { flexDirection: "row", alignItems: "center", gap: 4 },
+  search: { flexDirection: "row", alignItems: "center", gap: 8, borderWidth: 1, borderRadius: 12, paddingHorizontal: 12 },
   trade: { flexDirection: "row", alignItems: "center", gap: 10, borderWidth: 1, borderRadius: 14, padding: 12 },
 });

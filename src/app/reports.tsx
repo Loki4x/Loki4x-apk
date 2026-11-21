@@ -4,7 +4,7 @@ import { Redirect, useFocusEffect, useLocalSearchParams } from "expo-router";
 import * as Sharing from "expo-sharing";
 import { File, Paths } from "expo-file-system";
 import { Ionicons } from "@expo/vector-icons";
-import { Button, Card, ProgressBar, Screen, SkeletonPage, T } from "@/components/ui";
+import { Button, Card, ProgressBar, Screen, SkCard, SkText, Skeleton, T } from "@/components/ui";
 import { BackHeader } from "@/components/form";
 import { hasAccess, useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -169,7 +169,7 @@ export default function ReportsScreen() {
         {account ? ` · ${account.name}` : ""}
       </T>
       {error && <T variant="bodySm" color="error">{error}</T>}
-      {!view && !error && <SkeletonPage variant="kpi" />}
+      {!view && !error && <ReportsSkeleton />}
 
       {view && (
         <>
@@ -285,6 +285,60 @@ export default function ReportsScreen() {
         </>
       )}
     </Screen>
+  );
+}
+
+/** Kerangka Report: KPI, kalender P&L bulanan, dan rekap; ukurannya sama dengan isi aslinya. */
+function ReportsSkeleton() {
+  return (
+    <>
+      <SkCard style={styles.kpis}>
+        {[0, 1, 2, 3].map((i) => (
+          <View key={i} style={styles.kpi}>
+            <SkText variant="caption" width="55%" />
+            <SkText variant="body" width="70%" />
+          </View>
+        ))}
+      </SkCard>
+      <SkCard>
+        <View style={styles.between}>
+          <Skeleton height={22} width={22} radius={6} />
+          <View style={{ alignItems: "center", flex: 1 }}>
+            <SkText variant="h3" width="45%" />
+            <SkText variant="caption" width="25%" />
+          </View>
+          <Skeleton height={22} width={22} radius={6} />
+        </View>
+        <View style={styles.week}>
+          {Array.from({ length: 7 }, (_, i) => (
+            <View key={i} style={styles.dayHead}>
+              <SkText variant="caption" width="40%" style={{ alignSelf: "center" }} />
+            </View>
+          ))}
+        </View>
+        {Array.from({ length: 5 }, (_, w) => (
+          <View key={w} style={styles.week}>
+            {Array.from({ length: 7 }, (_, i) => (
+              <View key={i} style={styles.cell}>
+                <Skeleton fill radius={6} />
+              </View>
+            ))}
+          </View>
+        ))}
+        <Skeleton height={48} radius={999} />
+        <SkText variant="caption" width="80%" />
+      </SkCard>
+      <SkCard style={{ gap: 6 }}>
+        <SkText variant="label" width="30%" />
+        {[0, 1, 2].map((i) => (
+          <View key={i} style={styles.rowLine}>
+            <SkText variant="bodySm" width="35%" />
+            <View style={{ flex: 1 }} />
+            <SkText variant="caption" width={60} />
+          </View>
+        ))}
+      </SkCard>
+    </>
   );
 }
 

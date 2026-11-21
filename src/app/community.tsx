@@ -3,7 +3,8 @@ import { ActionSheetIOS, Alert, FlatList, KeyboardAvoidingView, Platform, Pressa
 import { Redirect, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { Badge, SkeletonPage, T } from "@/components/ui";
+import { Badge, T } from "@/components/ui";
+import { ChatSkeleton } from "@/components/Skeletons";
 import { BackHeader } from "@/components/form";
 import { ChatComposer } from "@/components/ChatComposer";
 import { GlassBackground } from "@/components/GlassBackground";
@@ -222,7 +223,7 @@ export default function CommunityScreen() {
             </View>
           ) : (
             <View style={{ padding: 16 }}>
-              <SkeletonPage variant="list" count={4} />
+              <ChatSkeleton />
             </View>
           )
         ) : (
