@@ -24,11 +24,11 @@ export default function AdminUsdtPaymentsScreen() {
 
   const shown = (data ?? []).filter((p) => filter === "ALL" || p.status === "PENDING");
 
-  async function review(id: string, action: "approve" | "reject") {
+  async function review(id: string, action: "approve" | "reject", reason: string) {
     setBusy(id);
     setMsg(null);
     try {
-      await reviewUsdtPayment(id, action);
+      await reviewUsdtPayment(id, action, reason);
       await load();
     } catch (e) {
       setMsg(friendlyApiError(e));
@@ -69,7 +69,8 @@ export default function AdminUsdtPaymentsScreen() {
             ) : null}
             {!p.slip_url && <T variant="caption" color="textMuted">Tanpa bukti transfer.</T>}
             <Badge label={p.status} tone={STATUS_TONE[p.status]} />
-            {p.status === "PENDING" && <ReviewButtons busy={busy === p.id} onReview={(a) => review(p.id, a)} />}
+          {p.status === "FAILED" && p.rejection_reason ? <T variant="caption" color="textMuted">Alasan: {p.rejection_reason}</T> : null}
+            {p.status === "PENDING" && <ReviewButtons busy={busy === p.id} rejectTitle="Tolak pembayaran USDT" onReview={(a, why) => review(p.id, a, why)} />}
           </Card>
         );
       })}

@@ -13,7 +13,7 @@ export interface UpgradeInfo {
   priceUsdt: Record<Plan, number>;
   wallets: Record<UsdtNetwork, { address: string; label: string }>;
   brokers: Record<string, { name: string; link: string }>;
-  vipRequest: { status: "PENDING" | "APPROVED" | "REJECTED"; broker: string | null; created_at: string } | null;
+  vipRequest: { status: "PENDING" | "APPROVED" | "REJECTED"; broker: string | null; created_at: string; rejection_reason?: string | null } | null;
 }
 
 export interface PromoQuote {

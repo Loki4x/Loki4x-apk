@@ -843,4 +843,11 @@ export const EN: Record<string, string> = {
   "Tutup percakapan": "Close conversation",
   "Belum ada pesan.": "No messages yet.",
   "Tulis balasan…": "Write a reply…",
+  "Tolak pengajuan VIP": "Reject VIP request",
+  "Tolak pembayaran USDT": "Reject USDT payment",
+  "Alasan penolakan (opsional)": "Rejection reason (optional)",
+  "Mis. bukti transfer tidak terbaca / nominal kurang / akun bukan di bawah IB kami": "E.g. unreadable transfer proof / amount too low / account not under our IB",
+  "Alasan dikirim ke user lewat notifikasi, push, dan email.": "The reason is sent to the user via notification, push and email.",
+  "Tolak": "Reject",
+  "Alasan:": "Reason:",
 };
