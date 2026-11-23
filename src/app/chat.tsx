@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { FlatList, KeyboardAvoidingView, Linking, Platform, StyleSheet, View } from "react-native";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FlatList, Linking, StyleSheet, View } from "react-native";
 import { Redirect } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -7,6 +7,8 @@ import { T } from "@/components/ui";
 import { ChatSkeleton } from "@/components/Skeletons";
 import { BackHeader } from "@/components/form";
 import { ChatComposer } from "@/components/ChatComposer";
+import { LinkText } from "@/components/LinkText";
+import { useKeyboardInset } from "@/lib/use-keyboard";
 import { GlassBackground } from "@/components/GlassBackground";
 import { AuthImage, chatImagePath } from "@/components/AuthImage";
 import { useAuth } from "@/lib/auth";
@@ -35,6 +37,11 @@ export default function SupportChatScreen() {
   const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
   const listRef = useRef<FlatList<SupportMessage>>(null);
+  // Tinggi keyboard (Android edge-to-edge tidak lagi mengecilkan layar otomatis).
+  const keyboard = useKeyboardInset();
+  // Daftar dibalik + FlatList "inverted": pesan terbaru selalu menempel di bawah seperti WhatsApp,
+  // dan tetap terlihat saat keyboard muncul.
+  const newestFirst = useMemo(() => (messages ? [...messages].reverse() : []), [messages]);
   const userId = session?.user.id;
 
   const load = useCallback(async () => {
@@ -90,7 +97,7 @@ export default function SupportChatScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top", "left", "right", "bottom"]}>
       <GlassBackground />
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <View style={{ flex: 1, paddingBottom: keyboard }}>
         <View style={{ paddingHorizontal: 16, paddingTop: 16, gap: 6 }}>
           <BackHeader title="Chat Admin" />
           <T variant="caption" color="textMuted">
@@ -108,12 +115,14 @@ export default function SupportChatScreen() {
         ) : (
           <FlatList
             ref={listRef}
-            data={messages}
+            data={newestFirst}
+            inverted
+            keyboardShouldPersistTaps="handled"
             keyExtractor={(m) => m.id}
             contentContainerStyle={{ padding: 16, gap: 10, flexGrow: 1 }}
-            onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
             ListEmptyComponent={
-              <View style={styles.center}>
+              // Daftar "inverted" ikut membalik komponen kosong, jadi dibalik lagi supaya tegak.
+              <View style={[styles.center, { transform: [{ scaleY: -1 }] }]}>
                 <Ionicons name="chatbubbles-outline" size={36} color={colors.textMuted} />
                 <T variant="bodySm" color="textMuted" style={{ textAlign: "center" }}>Belum ada percakapan. Kirim pesan pertama kamu ke admin.</T>
               </View>
@@ -125,7 +134,7 @@ export default function SupportChatScreen() {
                   <View style={[styles.bubble, { backgroundColor: mine ? colors.primarySubtle : colors.surface, borderColor: colors.border }]}>
                     {!mine && <T variant="caption" color="primary" style={{ fontWeight: "700" }}>Admin Loki4x</T>}
                     {m.image_key && <AuthImage path={chatImagePath(m.image_key)} style={styles.image} />}
-                    {m.body ? <T variant="bodySm">{m.body}</T> : null}
+                    {m.body ? <LinkText text={m.body} /> : null}
                     <T variant="caption" color="textMuted" style={{ fontSize: 10, alignSelf: "flex-end" }}>{formatDateTimeWib(m.created_at)}</T>
                   </View>
                 </View>
@@ -140,7 +149,7 @@ export default function SupportChatScreen() {
           maxLength={CHAT_MAX_LEN}
           top={error ? <T variant="caption" color="error">{error}</T> : undefined}
         />
-      </KeyboardAvoidingView>
+      </View>
     </SafeAreaView>
   );
 }

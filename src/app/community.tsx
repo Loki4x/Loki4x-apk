@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { ActionSheetIOS, Alert, FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ActionSheetIOS, Alert, FlatList, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Redirect, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -7,6 +7,8 @@ import { Badge, T } from "@/components/ui";
 import { ChatSkeleton } from "@/components/Skeletons";
 import { BackHeader } from "@/components/form";
 import { ChatComposer } from "@/components/ChatComposer";
+import { LinkText } from "@/components/LinkText";
+import { useKeyboardInset } from "@/lib/use-keyboard";
 import { GlassBackground } from "@/components/GlassBackground";
 import { AuthImage, communityImagePath } from "@/components/AuthImage";
 import { useAuth } from "@/lib/auth";
@@ -51,6 +53,11 @@ export default function CommunityScreen() {
   const [suggest, setSuggest] = useState<{ id: string; name: string }[]>([]);
   const [error, setError] = useState<string | null>(null);
   const listRef = useRef<FlatList<CommunityMessage>>(null);
+  // Tinggi keyboard (Android edge-to-edge tidak lagi mengecilkan layar otomatis).
+  const keyboard = useKeyboardInset();
+  // Daftar dibalik + FlatList "inverted": pesan terbaru selalu menempel di bawah seperti WhatsApp,
+  // dan tetap terlihat saat keyboard muncul.
+  const newestFirst = useMemo(() => (messages ? [...messages].reverse() : []), [messages]);
   const userId = session?.user.id;
 
   const allowed = canAccessRoom(tier, room);
@@ -179,7 +186,7 @@ export default function CommunityScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top", "left", "right", "bottom"]}>
       <GlassBackground />
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <View style={{ flex: 1, paddingBottom: keyboard }}>
         <View style={{ paddingHorizontal: 16, paddingTop: 16, gap: 10 }}>
           <BackHeader title="Komunitas" />
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 8 }}>
@@ -229,11 +236,12 @@ export default function CommunityScreen() {
         ) : (
           <FlatList
             ref={listRef}
-            data={messages}
+            data={newestFirst}
+            inverted
+            keyboardShouldPersistTaps="handled"
             keyExtractor={(m) => m.id}
             contentContainerStyle={{ padding: 16, gap: 10 }}
-            onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
-            ListEmptyComponent={<T variant="bodySm" color="textMuted" style={{ textAlign: "center" }}>Belum ada pesan. Sapa member lain!</T>}
+            ListEmptyComponent={<T variant="bodySm" color="textMuted" style={{ textAlign: "center", transform: [{ scaleY: -1 }] }}>Belum ada pesan. Sapa member lain!</T>}
             renderItem={({ item: m }) => {
               const mine = m.user_id === userId;
               return (
@@ -254,7 +262,7 @@ export default function CommunityScreen() {
                       </View>
                     )}
                     {m.image_key && <AuthImage path={communityImagePath(m.image_key)} style={styles.image} />}
-                    {m.body ? <T variant="bodySm">{m.body}</T> : null}
+                    {m.body ? <LinkText text={m.body} /> : null}
                     <T variant="caption" color="textMuted" style={{ fontSize: 10, alignSelf: "flex-end" }}>
                       {m.pinned_at ? "📌 " : ""}
                       {formatDateTimeWib(m.created_at)}
@@ -302,7 +310,7 @@ export default function CommunityScreen() {
           <T variant="caption" color="textMuted" style={{ textAlign: "center", padding: 12 }}>Hanya admin yang bisa menulis di ruang Pengumuman.</T>
         )}
         {allowed && canWrite && <T variant="caption" color="textMuted" style={{ textAlign: "center", paddingBottom: 6 }}>Tekan lama pesan untuk membalas atau melaporkan.</T>}
-      </KeyboardAvoidingView>
+      </View>
     </SafeAreaView>
   );
 }
