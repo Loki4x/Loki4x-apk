@@ -946,4 +946,9 @@ export const EN: Record<string, string> = {
   "URL tujuan wajib diisi.": "Destination URL is required.",
   "Mulai di sini": "Start here",
   "Daftar akun Loki4x": "Sign up for Loki4x",
+  "Pengajuan disetujui. User sudah diberi notifikasi.": "Request approved. The user has been notified.",
+  "Pengajuan ditolak. User sudah diberi notifikasi.": "Request rejected. The user has been notified.",
+  "Pembayaran disetujui. User sudah diberi notifikasi.": "Payment approved. The user has been notified.",
+  "Pembayaran ditolak. User sudah diberi notifikasi.": "Payment rejected. The user has been notified.",
+  "Memproses…": "Processing…",
 };

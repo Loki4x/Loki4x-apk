@@ -26,7 +26,7 @@ import {
   type SupportMessage,
 } from "@/lib/chat";
 
-const POLL_MS = 20_000;
+const POLL_MS = 6_000; // cadangan kalau realtime tidak terhubung
 
 /** Chat langsung dengan admin (sama dengan widget chat di web). */
 export default function SupportChatScreen() {

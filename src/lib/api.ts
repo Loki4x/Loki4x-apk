@@ -12,10 +12,14 @@ export async function apiGet<T>(path: string): Promise<T> {
 export async function apiRequest<T>(method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE", path: string, payload?: unknown): Promise<T> {
   const { data } = await supabase.auth.getSession();
   const token = data.session?.access_token;
-  const res = await fetch(`${WEB_URL}${path}`, {
+  // GET selalu ambil data terbaru: jangan pakai salinan lama dari cache HTTP perangkat/CDN.
+  const url = method === "GET" ? `${WEB_URL}${path}${path.includes("?") ? "&" : "?"}_t=${Date.now()}` : `${WEB_URL}${path}`;
+  const res = await fetch(url, {
     method,
+    cache: "no-store",
     headers: {
       Accept: "application/json",
+      "Cache-Control": "no-cache",
       ...(payload !== undefined ? { "Content-Type": "application/json" } : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },

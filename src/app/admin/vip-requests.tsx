@@ -4,6 +4,7 @@ import { Badge, Card, Screen, SkeletonPage, T } from "@/components/ui";
 import { BackHeader, OptionChips } from "@/components/form";
 import { ReviewButtons, STATUS_TONE } from "@/components/AdminReview";
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 import { formatDateTimeWib } from "@/lib/format";
 import { friendlyApiError } from "@/lib/journal";
 import { reviewVipRequest, type VipRequest } from "@/lib/admin";
@@ -14,10 +15,12 @@ const brokerName = (b: string | null | undefined) => (b ? b.charAt(0).toUpperCas
 /** Pengajuan upgrade VIP via IB broker (sama dengan /admin/vip-requests di web). */
 export default function AdminVipRequestsScreen() {
   const { session, profile } = useAuth();
-  const { data, error, load, refresh, refreshing } = useAdminData<VipRequest[]>("vip-requests");
+  const { data, setData, error, load, refresh, refreshing } = useAdminData<VipRequest[]>("vip-requests");
   const [filter, setFilter] = useState<"PENDING" | "ALL">("PENDING");
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
+  const [done, setDone] = useState<string | null>(null);
+  const { t } = useI18n();
 
   if (!session) return <Redirect href="/login" />;
   if (!profile?.is_admin) return <Redirect href="/account" />;
@@ -27,9 +30,13 @@ export default function AdminVipRequestsScreen() {
   async function review(id: string, action: "approve" | "reject", reason: string) {
     setBusy(id);
     setMsg(null);
+    setDone(null);
     try {
       await reviewVipRequest(id, action, reason);
-      await load();
+      // Langsung ubah status di layar (tanpa menunggu muat ulang), lalu sinkronkan dengan server.
+      setData((list) => list?.map((x) => (x.id === id ? { ...x, status: action === "approve" ? "APPROVED" : "REJECTED", rejection_reason: action === "reject" ? reason || null : x.rejection_reason } : x)) ?? null);
+      setDone(action === "approve" ? t("Pengajuan disetujui. User sudah diberi notifikasi.") : t("Pengajuan ditolak. User sudah diberi notifikasi."));
+      load();
     } catch (e) {
       setMsg(friendlyApiError(e));
     } finally {
@@ -43,6 +50,7 @@ export default function AdminVipRequestsScreen() {
       <T variant="bodySm" color="textSecondary">Pengajuan upgrade VIP via IB broker.</T>
       <OptionChips label="Tampilkan" options={[{ value: "PENDING", label: "Menunggu" }, { value: "ALL", label: "Semua" }]} value={filter} onChange={setFilter} />
       {(error || msg) && <T variant="bodySm" color="error">{msg ?? error}</T>}
+      {done && <T variant="bodySm" color="success">{done}</T>}
       {!data && !error && <SkeletonPage variant="list" />}
       {data && shown.length === 0 && (
         <Card>

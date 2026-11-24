@@ -18,7 +18,7 @@ import { CHAT_MAX_LEN, fetchSupportMessages, type SupportMessage } from "@/lib/c
 import { friendlyApiError } from "@/lib/journal";
 import { adminChatPatch, adminChatReply } from "@/lib/admin";
 
-const POLL_MS = 20_000;
+const POLL_MS = 6_000; // cadangan kalau realtime tidak terhubung
 
 /** Percakapan Live Chat dengan satu user (admin membalas). */
 export default function AdminChatThreadScreen() {
