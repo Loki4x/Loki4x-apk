@@ -34,7 +34,7 @@ import {
 } from "@/lib/chat";
 
 const isRoom = (v: unknown): v is Room => typeof v === "string" && (ROOMS as string[]).includes(v);
-const POLL_MS = 30_000;
+const POLL_MS = 10_000; // cadangan kalau realtime tidak terhubung
 
 /** Komunitas: chat grup per tier (sama dengan /community di web), realtime lewat Supabase. */
 export default function CommunityScreen() {

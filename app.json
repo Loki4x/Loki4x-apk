@@ -3,7 +3,7 @@
     "name": "Loki4x Academy",
     "slug": "loki4x-academy",
     "scheme": "loki4x",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",

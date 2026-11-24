@@ -25,7 +25,10 @@ export default function AdminChatListScreen() {
       .channel(`admin-chat-list-${Date.now()}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "chat_threads" }, () => load())
       .subscribe();
+    // Cadangan kalau realtime tidak terhubung: segarkan daftar tiap 10 detik selama layar terbuka.
+    const timer = setInterval(load, 10_000);
     return () => {
+      clearInterval(timer);
       supabase.removeChannel(channel);
     };
   }, [profile?.is_admin, load]);

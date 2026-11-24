@@ -6,6 +6,7 @@ import { BackHeader, OptionChips } from "@/components/form";
 import { ReviewButtons, STATUS_TONE } from "@/components/AdminReview";
 import { AuthImage } from "@/components/AuthImage";
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 import { formatDateTimeWib } from "@/lib/format";
 import { friendlyApiError } from "@/lib/journal";
 import { PLAN_LABEL, reviewUsdtPayment, slipPath, type UsdtPayment } from "@/lib/admin";
@@ -14,10 +15,12 @@ import { useAdminData } from "@/lib/use-admin-data";
 /** Verifikasi manual pembayaran USDT (sama dengan /admin/usdt-payments di web). */
 export default function AdminUsdtPaymentsScreen() {
   const { session, profile } = useAuth();
-  const { data, error, load, refresh, refreshing } = useAdminData<UsdtPayment[]>("usdt-payments");
+  const { data, setData, error, load, refresh, refreshing } = useAdminData<UsdtPayment[]>("usdt-payments");
   const [filter, setFilter] = useState<"PENDING" | "ALL">("PENDING");
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
+  const [done, setDone] = useState<string | null>(null);
+  const { t } = useI18n();
 
   if (!session) return <Redirect href="/login" />;
   if (!profile?.is_admin) return <Redirect href="/account" />;
@@ -27,9 +30,13 @@ export default function AdminUsdtPaymentsScreen() {
   async function review(id: string, action: "approve" | "reject", reason: string) {
     setBusy(id);
     setMsg(null);
+    setDone(null);
     try {
       await reviewUsdtPayment(id, action, reason);
-      await load();
+      // Langsung ubah status di layar (tanpa menunggu muat ulang), lalu sinkronkan dengan server.
+      setData((list) => list?.map((x) => (x.id === id ? { ...x, status: action === "approve" ? "COMPLETED" : "FAILED", rejection_reason: action === "reject" ? reason || null : x.rejection_reason } : x)) ?? null);
+      setDone(action === "approve" ? t("Pembayaran disetujui. User sudah diberi notifikasi.") : t("Pembayaran ditolak. User sudah diberi notifikasi."));
+      load();
     } catch (e) {
       setMsg(friendlyApiError(e));
     } finally {
@@ -43,6 +50,7 @@ export default function AdminUsdtPaymentsScreen() {
       <T variant="bodySm" color="textSecondary">Verifikasi manual pembayaran via USDT — cek bukti transfer sebelum approve.</T>
       <OptionChips label="Tampilkan" options={[{ value: "PENDING", label: "Menunggu" }, { value: "ALL", label: "Semua" }]} value={filter} onChange={setFilter} />
       {(error || msg) && <T variant="bodySm" color="error">{msg ?? error}</T>}
+      {done && <T variant="bodySm" color="success">{done}</T>}
       {!data && !error && <SkeletonPage variant="list" />}
       {data && shown.length === 0 && (
         <Card>

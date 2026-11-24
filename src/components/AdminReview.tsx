@@ -34,7 +34,7 @@ export function ReviewButtons({
     <>
       <View style={{ flexDirection: "row", gap: 10 }}>
         <Button title="Approve" onPress={approve} loading={busy} style={{ flex: 1 }} />
-        <Button title="Reject" variant="secondary" onPress={() => setOpen(true)} disabled={busy} style={{ flex: 1 }} />
+        <Button title={busy ? "Memproses…" : "Reject"} variant="secondary" onPress={() => setOpen(true)} disabled={busy} style={{ flex: 1 }} />
       </View>
       <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
